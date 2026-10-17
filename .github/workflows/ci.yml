@@ -60,7 +60,12 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y clang-tidy ninja-build
 
       - name: Configure
-        run: cmake -S . -B build/clang-tidy -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        run: >
+          cmake -S . -B build/clang-tidy -G Ninja
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          -DGLFW_BUILD_X11=OFF
+          -DGLFW_BUILD_WAYLAND=OFF
+          -DPROJECTLIGHT_BUILD_TESTS=OFF
 
       - name: Run clang-tidy
         run: |
