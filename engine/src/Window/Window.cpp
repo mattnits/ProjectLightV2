@@ -57,6 +57,6 @@ namespace ProjectLight
     }
 
     void* Window::GetNativeHandle() const {
-    return m_Window;
-}
+        return m_Window;
+    }
 }

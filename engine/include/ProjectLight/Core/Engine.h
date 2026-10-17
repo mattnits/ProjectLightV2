@@ -5,7 +5,8 @@
 
 namespace ProjectLight
 {
-    class Engine {
+    class Engine
+    {
     public:
         Engine();
 
