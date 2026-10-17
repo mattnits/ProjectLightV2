@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
 
-TEST(ProjectLightTests, TestFrameworkWorks) {
+TEST(ProjectLightSmokeTests, TestFrameworkWorks) {
     EXPECT_EQ(1 + 1, 2);
 }

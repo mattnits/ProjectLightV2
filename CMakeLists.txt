@@ -11,6 +11,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(PROJECTLIGHT_ENABLE_ASAN "Enable AddressSanitizer" OFF)
+
 # GLFW configuration
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -22,24 +24,7 @@ add_subdirectory(third_party/glm)
 add_subdirectory(third_party/glad)
 add_subdirectory(third_party/imgui)
 
-# Project targets
-add_subdirectory(engine)
-add_subdirectory(sandbox)
-add_subdirectory(editor)
-
-option(PROJECTLIGHT_BUILD_TESTS "Build ProjectLight tests" ON)
-
-if(PROJECTLIGHT_BUILD_TESTS)
-    enable_testing()
-
-    add_subdirectory(third_party/googletest)
-    add_subdirectory(tests)
-endif()
-
-option(PROJECTLIGHT_ENABLE_ASAN "Enable AddressSanitizer" OFF)
-
-option(PROJECTLIGHT_ENABLE_ASAN "Enable AddressSanitizer" OFF)
-
+# Sanitizer configuration
 if(PROJECTLIGHT_ENABLE_ASAN)
     if(MSVC)
         add_compile_options(/fsanitize=address)
@@ -54,4 +39,18 @@ if(PROJECTLIGHT_ENABLE_ASAN)
             -fsanitize=address
         )
     endif()
+endif()
+
+# Project targets
+add_subdirectory(engine)
+add_subdirectory(sandbox)
+add_subdirectory(editor)
+
+option(PROJECTLIGHT_BUILD_TESTS "Build ProjectLight tests" ON)
+
+if(PROJECTLIGHT_BUILD_TESTS)
+    enable_testing()
+
+    add_subdirectory(third_party/googletest)
+    add_subdirectory(tests)
 endif()

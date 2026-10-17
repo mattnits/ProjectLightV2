@@ -37,6 +37,7 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
+                "GLFW_BUILD_WAYLAND": "OFF",
                 "PROJECTLIGHT_ENABLE_ASAN": "ON",
                 "PROJECTLIGHT_BUILD_TESTS": "ON"
             }
