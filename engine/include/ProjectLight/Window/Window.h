@@ -9,11 +9,7 @@ namespace ProjectLight
     class Window
     {
     public:
-        Window(
-            int width,
-            int height,
-            const std::string& title
-        );
+        Window(int width, int height, const std::string& title);
 
         ~Window();
 
@@ -24,6 +20,8 @@ namespace ProjectLight
 
         void PollEvents();
         void SwapBuffers();
+
+        void* GetNativeHandle() const;
 
     private:
         GLFWwindow* m_Window = nullptr;

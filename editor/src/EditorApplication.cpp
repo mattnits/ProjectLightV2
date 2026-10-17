@@ -1,0 +1,78 @@
+#include "ProjectLight/Editor/EditorApplication.h"
+
+#include "ProjectLight/Core/Engine.h"
+
+#include <GLFW/glfw3.h>
+
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
+namespace ProjectLight
+{
+    EditorApplication::EditorApplication(Engine& engine)
+        : m_Engine(engine) {
+    }
+
+    void EditorApplication::OnStart() {
+        IMGUI_CHECKVERSION();
+
+        ImGui::CreateContext();
+
+        ImGuiIO& io = ImGui::GetIO();
+
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+#ifdef IMGUI_HAS_DOCK
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+#endif
+
+        ImGui::StyleColorsDark();
+
+        auto* window = static_cast<GLFWwindow*>(
+            m_Engine.GetWindow().GetNativeHandle()
+        );
+
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init("#version 460");
+    }
+
+    void EditorApplication::OnUpdate() {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Begin("Inspector");
+
+        ImGui::Text("ProjectLight Editor");
+
+        ImGui::Separator();
+
+        static float position[3] = {
+            0.0f,
+            0.0f,
+            0.0f
+        };
+
+        ImGui::DragFloat3(
+            "Position",
+            position,
+            0.1f
+        );
+
+        ImGui::End();
+
+        ImGui::Render();
+
+        ImGui_ImplOpenGL3_RenderDrawData(
+            ImGui::GetDrawData()
+        );
+    }
+
+    void EditorApplication::OnShutdown() {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+
+        ImGui::DestroyContext();
+    }
+}
