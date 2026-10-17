@@ -21,6 +21,8 @@ namespace ProjectLight
         void PollEvents();
         void SwapBuffers();
 
+        void* GetNativeHandle() const;
+
     private:
         GLFWwindow* m_Window = nullptr;
     };

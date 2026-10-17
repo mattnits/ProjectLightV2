@@ -1,8 +1,13 @@
+#include "ProjectLight/Core/Application.h"
 #include "ProjectLight/Core/Engine.h"
+
+class SandboxApplication : public ProjectLight::Application {};
 
 int main() {
     ProjectLight::Engine engine;
-    engine.Run();
+    SandboxApplication sandbox;
+
+    engine.Run(sandbox);
 
     return 0;
 }

@@ -1,10 +1,19 @@
 #pragma once
 
+#include "ProjectLight/Core/Application.h"
+#include "ProjectLight/Window/Window.h"
+
 namespace ProjectLight
 {
-    class Engine
-    {
+    class Engine {
     public:
-        void Run();
+        Engine();
+
+        void Run(Application& application);
+
+        Window& GetWindow();
+
+    private:
+        Window m_Window;
     };
 }

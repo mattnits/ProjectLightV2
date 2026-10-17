@@ -20,10 +20,12 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(third_party/glfw)
 add_subdirectory(third_party/glm)
 add_subdirectory(third_party/glad)
+add_subdirectory(third_party/imgui)
 
 # Project targets
 add_subdirectory(engine)
 add_subdirectory(sandbox)
+add_subdirectory(editor)
 
 option(PROJECTLIGHT_BUILD_TESTS "Build ProjectLight tests" ON)
 

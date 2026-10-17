@@ -55,4 +55,8 @@ namespace ProjectLight
     void Window::SwapBuffers() {
         glfwSwapBuffers(m_Window);
     }
+
+    void* Window::GetNativeHandle() const {
+    return m_Window;
+}
 }
