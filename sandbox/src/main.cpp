@@ -1,7 +1,6 @@
 #include "ProjectLight/Core/Engine.h"
 
-int main()
-{
+int main() {
     ProjectLight::Engine engine;
     engine.Run();
 
