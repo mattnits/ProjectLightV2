@@ -11,6 +11,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(PROJECTLIGHT_ENABLE_ASAN "Enable AddressSanitizer" OFF)
+
 # GLFW configuration
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -18,9 +20,28 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 # Third-party dependencies
 add_subdirectory(third_party/glfw)
+target_compile_definitions(glfw INTERFACE GLFW_INCLUDE_NONE)
+
 add_subdirectory(third_party/glm)
 add_subdirectory(third_party/glad)
 add_subdirectory(third_party/imgui)
+
+# Sanitizer configuration
+if(PROJECTLIGHT_ENABLE_ASAN)
+    if(MSVC)
+        add_compile_options(/fsanitize=address)
+        add_link_options(/fsanitize=address)
+    else()
+        add_compile_options(
+            -fsanitize=address
+            -fno-omit-frame-pointer
+        )
+
+        add_link_options(
+            -fsanitize=address
+        )
+    endif()
+endif()
 
 # Project targets
 add_subdirectory(engine)
