@@ -20,6 +20,8 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 # Third-party dependencies
 add_subdirectory(third_party/glfw)
+target_compile_definitions(glfw INTERFACE GLFW_INCLUDE_NONE)
+
 add_subdirectory(third_party/glm)
 add_subdirectory(third_party/glad)
 add_subdirectory(third_party/imgui)
