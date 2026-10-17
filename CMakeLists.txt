@@ -35,3 +35,23 @@ if(PROJECTLIGHT_BUILD_TESTS)
     add_subdirectory(third_party/googletest)
     add_subdirectory(tests)
 endif()
+
+option(PROJECTLIGHT_ENABLE_ASAN "Enable AddressSanitizer" OFF)
+
+option(PROJECTLIGHT_ENABLE_ASAN "Enable AddressSanitizer" OFF)
+
+if(PROJECTLIGHT_ENABLE_ASAN)
+    if(MSVC)
+        add_compile_options(/fsanitize=address)
+        add_link_options(/fsanitize=address)
+    else()
+        add_compile_options(
+            -fsanitize=address
+            -fno-omit-frame-pointer
+        )
+
+        add_link_options(
+            -fsanitize=address
+        )
+    endif()
+endif()

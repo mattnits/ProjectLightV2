@@ -20,6 +20,28 @@
             }
         },
         {
+            "name": "windows-asan",
+            "displayName": "Windows ASan",
+            "inherits": "windows-debug",
+            "binaryDir": "${sourceDir}/build/windows-asan",
+            "cacheVariables": {
+                "PROJECTLIGHT_ENABLE_ASAN": "ON"
+            }
+        },
+        {
+            "name": "linux-sanitizers",
+            "displayName": "Linux Sanitizers",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/linux-sanitizers",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "PROJECTLIGHT_ENABLE_ASAN": "ON",
+                "PROJECTLIGHT_BUILD_TESTS": "ON"
+            }
+        },
+        {
             "name": "ProjectLightCmake",
             "description": "",
             "displayName": "",
@@ -36,6 +58,14 @@
         {
             "name": "windows-release",
             "configurePreset": "windows-release"
+        },
+        {
+            "name": "windows-asan",
+            "configurePreset": "windows-asan"
+        },
+        {
+            "name": "linux-sanitizers",
+            "configurePreset": "linux-sanitizers"
         }
     ]
 }

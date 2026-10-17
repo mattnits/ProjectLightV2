@@ -73,3 +73,38 @@ jobs:
             -type f -name "*.cpp" \
             -print0 |
           xargs -0 -n1 clang-tidy -p build/clang-tidy
+          
+  sanitizers:
+    name: ASan + LeakSanitizer
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang \
+            ninja-build \
+            libx11-dev \
+            libxrandr-dev \
+            libxinerama-dev \
+            libxcursor-dev \
+            libxi-dev
+
+      - name: Configure
+        run: cmake --preset linux-sanitizers
+
+      - name: Build
+        run: cmake --build --preset linux-sanitizers
+
+      - name: Run tests with leak detection
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          LSAN_OPTIONS: exitcode=23
+        run: |
+          ctest \
+            --test-dir build/linux-sanitizers \
+            --output-on-failure

@@ -1,5 +1,6 @@
 add_executable(ProjectLightTests
     Core/EngineTests.cpp
+    Core/SmokeTest.cpp
 )
 
 target_link_libraries(ProjectLightTests
