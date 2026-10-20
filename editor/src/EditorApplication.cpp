@@ -23,9 +23,9 @@ namespace ProjectLight
 
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-#ifdef IMGUI_HAS_DOCK
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-#endif
+        #ifdef IMGUI_HAS_DOCK
+                io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        #endif
 
         ImGui::StyleColorsDark();
 
@@ -35,6 +35,8 @@ namespace ProjectLight
 
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 460");
+
+        m_Inspector.SetTransform(&m_SelectedTransform);
     }
 
     void EditorApplication::OnUpdate() {
@@ -42,25 +44,7 @@ namespace ProjectLight
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Inspector");
-
-        ImGui::Text("ProjectLight Editor");
-
-        ImGui::Separator();
-
-        static float position[3] = {
-            0.0f,
-            0.0f,
-            0.0f
-        };
-
-        ImGui::DragFloat3(
-            "Position",
-            position,
-            0.1f
-        );
-
-        ImGui::End();
+        m_Inspector.OnImGuiRender();
 
         ImGui::Render();
 

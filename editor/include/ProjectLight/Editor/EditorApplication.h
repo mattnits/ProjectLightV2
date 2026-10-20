@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ProjectLight/Core/Application.h"
+#include "ProjectLight/Editor/Panels/InspectorPanel.h"
+#include "ProjectLight/Scene/Components/TransformComponent.h"
 
 namespace ProjectLight
 {
@@ -17,5 +19,7 @@ namespace ProjectLight
 
     private:
         Engine& m_Engine;
+        TransformComponent m_SelectedTransform{};
+        InspectorPanel m_Inspector;
     };
 }
