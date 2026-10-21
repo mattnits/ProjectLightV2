@@ -1,6 +1,5 @@
-#include "ProjectLight/Editor/EditorApplication.h"
-
 #include "ProjectLight/Core/Engine.h"
+#include "ProjectLight/Editor/EditorApplication.h"
 
 int main() {
     ProjectLight::Engine engine;

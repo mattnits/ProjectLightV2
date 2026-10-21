@@ -1,9 +1,11 @@
 #pragma once
 
-namespace ProjectLight {
+namespace ProjectLight
+{
     struct TransformComponent;
-    
-    class InspectorPanel {
+
+    class InspectorPanel
+    {
     public:
         InspectorPanel() = default;
         void SetTransform(TransformComponent* transform);

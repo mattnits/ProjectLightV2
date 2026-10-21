@@ -1,18 +1,15 @@
 #include "ProjectLight/Editor/EditorApplication.h"
 
-#include "ProjectLight/Core/Engine.h"
-
 #include <GLFW/glfw3.h>
-
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include "ProjectLight/Core/Engine.h"
+
 namespace ProjectLight
 {
-    EditorApplication::EditorApplication(Engine& engine)
-        : m_Engine(engine) {
-    }
+    EditorApplication::EditorApplication(Engine& engine) : m_Engine(engine) {}
 
     void EditorApplication::OnStart() {
         IMGUI_CHECKVERSION();
@@ -23,15 +20,13 @@ namespace ProjectLight
 
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-        #ifdef IMGUI_HAS_DOCK
-                io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        #endif
+#ifdef IMGUI_HAS_DOCK
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+#endif
 
         ImGui::StyleColorsDark();
 
-        auto* window = static_cast<GLFWwindow*>(
-            m_Engine.GetWindow().GetNativeHandle()
-        );
+        auto* window = static_cast<GLFWwindow*>(m_Engine.GetWindow().GetNativeHandle());
 
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 460");
@@ -48,9 +43,7 @@ namespace ProjectLight
 
         ImGui::Render();
 
-        ImGui_ImplOpenGL3_RenderDrawData(
-            ImGui::GetDrawData()
-        );
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
     void EditorApplication::OnShutdown() {
