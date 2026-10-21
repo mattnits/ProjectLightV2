@@ -39,6 +39,10 @@ namespace ProjectLight
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+#ifdef IMGUI_HAS_DOCK
+        ImGui::DockSpaceOverViewport();
+#endif
+
         m_Inspector.OnImGuiRender();
 
         ImGui::Render();
