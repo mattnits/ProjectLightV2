@@ -1,18 +1,15 @@
 #include "ProjectLight/Editor/EditorApplication.h"
 
-#include "ProjectLight/Core/Engine.h"
-
 #include <GLFW/glfw3.h>
-
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include "ProjectLight/Core/Engine.h"
+
 namespace ProjectLight
 {
-    EditorApplication::EditorApplication(Engine& engine)
-        : m_Engine(engine) {
-    }
+    EditorApplication::EditorApplication(Engine& engine) : m_Engine(engine) {}
 
     void EditorApplication::OnStart() {
         IMGUI_CHECKVERSION();
@@ -29,12 +26,12 @@ namespace ProjectLight
 
         ImGui::StyleColorsDark();
 
-        auto* window = static_cast<GLFWwindow*>(
-            m_Engine.GetWindow().GetNativeHandle()
-        );
+        auto* window = static_cast<GLFWwindow*>(m_Engine.GetWindow().GetNativeHandle());
 
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 460");
+
+        m_Inspector.SetTransform(&m_SelectedTransform);
     }
 
     void EditorApplication::OnUpdate() {
@@ -42,31 +39,15 @@ namespace ProjectLight
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Inspector");
+#ifdef IMGUI_HAS_DOCK
+        ImGui::DockSpaceOverViewport();
+#endif
 
-        ImGui::Text("ProjectLight Editor");
-
-        ImGui::Separator();
-
-        static float position[3] = {
-            0.0f,
-            0.0f,
-            0.0f
-        };
-
-        ImGui::DragFloat3(
-            "Position",
-            position,
-            0.1f
-        );
-
-        ImGui::End();
+        m_Inspector.OnImGuiRender();
 
         ImGui::Render();
 
-        ImGui_ImplOpenGL3_RenderDrawData(
-            ImGui::GetDrawData()
-        );
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
     void EditorApplication::OnShutdown() {

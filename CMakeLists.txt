@@ -24,7 +24,7 @@ target_compile_definitions(glfw INTERFACE GLFW_INCLUDE_NONE)
 
 add_subdirectory(third_party/glm)
 add_subdirectory(third_party/glad)
-add_subdirectory(third_party/imgui)
+add_subdirectory(third_party)
 
 # Sanitizer configuration
 if(PROJECTLIGHT_ENABLE_ASAN)

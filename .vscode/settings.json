@@ -1,4 +1,15 @@
 {
     "cmake.configureOnOpen": true,
-    "cmake.useCMakePresets": "always"
+    "cmake.useCMakePresets": "always",
+    "C_Cpp.clang_format_style": "file",
+
+    "[cpp]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools",
+        "editor.formatOnSave": true
+    },
+
+    "[c]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools",
+        "editor.formatOnSave": true
+    }
 }

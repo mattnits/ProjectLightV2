@@ -1,6 +1,7 @@
 add_executable(ProjectLightEditor
     src/main.cpp
     src/EditorApplication.cpp
+    src/Panels/InspectorPanel.cpp
 )
 
 target_include_directories(ProjectLightEditor
