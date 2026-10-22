@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ProjectLight/Core/Timestep.h"
+
 namespace ProjectLight
 {
     class Application
@@ -8,7 +10,8 @@ namespace ProjectLight
         virtual ~Application() = default;
 
         virtual void OnStart() {}
-        virtual void OnUpdate() {}
+        virtual void OnUpdate(Timestep timestep) {}
+        virtual void OnRender() {}
         virtual void OnShutdown() {}
     };
 }
