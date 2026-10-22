@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ProjectLight/Core/Application.h"
+#include "ProjectLight/Core/Timestep.h"
 #include "ProjectLight/Editor/Panels/InspectorPanel.h"
 #include "ProjectLight/Scene/Components/TransformComponent.h"
 
@@ -14,7 +15,8 @@ namespace ProjectLight
         explicit EditorApplication(Engine& engine);
 
         void OnStart() override;
-        void OnUpdate() override;
+        void OnUpdate(Timestep timestep) override;
+        void OnRender() override;
         void OnShutdown() override;
 
     private:

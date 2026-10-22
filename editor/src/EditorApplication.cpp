@@ -34,7 +34,9 @@ namespace ProjectLight
         m_Inspector.SetTransform(&m_SelectedTransform);
     }
 
-    void EditorApplication::OnUpdate() {
+    void EditorApplication::OnUpdate(Timestep) {}
+
+    void EditorApplication::OnRender() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -56,4 +58,5 @@ namespace ProjectLight
 
         ImGui::DestroyContext();
     }
+
 }
