@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 
 struct GLFWwindow;
 
@@ -23,7 +24,14 @@ namespace ProjectLight
 
         void* GetNativeHandle() const;
 
+        std::pair<int, int> GetLogicalSize() const;
+        std::pair<int, int> GetFramebufferSize() const;
+
+        void SetVSync(bool enabled);
+
     private:
+        static void OnFramebufferResize(GLFWwindow*, int width, int height);
+
         GLFWwindow* m_Window = nullptr;
     };
 }

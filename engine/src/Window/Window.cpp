@@ -24,6 +24,7 @@ namespace ProjectLight
         }
 
         glfwMakeContextCurrent(m_Window);
+        SetVSync(true);
 
         if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
             glfwDestroyWindow(m_Window);
@@ -33,6 +34,10 @@ namespace ProjectLight
 
             throw std::runtime_error("Failed to initialize GLAD");
         }
+
+        const auto [framebufferWidth, framebufferHeight] = GetFramebufferSize();
+        OnFramebufferResize(m_Window, framebufferWidth, framebufferHeight);
+        glfwSetFramebufferSizeCallback(m_Window, OnFramebufferResize);
     }
 
     Window::~Window() {
@@ -57,5 +62,27 @@ namespace ProjectLight
 
     void* Window::GetNativeHandle() const {
         return m_Window;
+    }
+
+    std::pair<int, int> Window::GetLogicalSize() const {
+        int width{};
+        int height{};
+        glfwGetWindowSize(m_Window, &width, &height);
+        return {width, height};
+    }
+
+    std::pair<int, int> Window::GetFramebufferSize() const {
+        int width{};
+        int height{};
+        glfwGetFramebufferSize(m_Window, &width, &height);
+        return {width, height};
+    }
+
+    void Window::OnFramebufferResize(GLFWwindow*, int width, int height) {
+        glViewport(0, 0, width, height);
+    }
+
+    void Window::SetVSync(bool enabled) {
+        glfwSwapInterval(enabled ? 1 : 0);
     }
 }
