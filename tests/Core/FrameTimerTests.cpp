@@ -1,20 +1,16 @@
-#include <chrono>
-
-#include <gtest/gtest.h>
-
 #include <ProjectLight/Core/FrameTimer.h>
+#include <chrono>
+#include <gtest/gtest.h>
 
 namespace ProjectLight
 {
-    TEST(FrameTimerTests, FirstTickReturnsZero)
-    {
+    TEST(FrameTimerTests, FirstTickReturnsZero) {
         FrameTimer timer;
 
         EXPECT_DOUBLE_EQ(timer.TickAt(FrameTimer::TimePoint{}).GetSeconds(), 0.0);
     }
 
-    TEST(FrameTimerTests, ReturnsElapsedTimeBetweenTicks)
-    {
+    TEST(FrameTimerTests, ReturnsElapsedTimeBetweenTicks) {
         FrameTimer timer;
         const FrameTimer::TimePoint start{};
 
@@ -25,8 +21,7 @@ namespace ProjectLight
         EXPECT_DOUBLE_EQ(timestep.GetMilliseconds(), 16.0);
     }
 
-    TEST(FrameTimerTests, ClampsLargeDeltaAndUsesCurrentTimeAsNextBaseline)
-    {
+    TEST(FrameTimerTests, ClampsLargeDeltaAndUsesCurrentTimeAsNextBaseline) {
         FrameTimer timer;
         const FrameTimer::TimePoint start{};
 
