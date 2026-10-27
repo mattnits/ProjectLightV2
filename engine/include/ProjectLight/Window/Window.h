@@ -7,10 +7,11 @@ struct GLFWwindow;
 
 namespace ProjectLight
 {
+    class Input;
     class Window
     {
     public:
-        Window(int width, int height, const std::string& title);
+        Window(Input& input, int width, int height, const std::string& title);
 
         ~Window();
 
@@ -31,7 +32,13 @@ namespace ProjectLight
 
     private:
         static void OnFramebufferResize(GLFWwindow*, int width, int height);
+        static void OnKeyEvent(GLFWwindow* glfwWindow, int key, int scancode, int action, int mods);
+        static void OnMouseButtonEvent(GLFWwindow* glfwWindow, int button, int action, int mods);
+        static void OnCursorPosition(GLFWwindow* glfwWindow, double x, double y);
+        static void OnScroll(GLFWwindow* glfwWindow, double xOffset, double yOffset);
+        static void OnWindowFocus(GLFWwindow* glfwWindow, int focused);
 
         GLFWwindow* m_Window = nullptr;
+        Input& m_Input;
     };
 }

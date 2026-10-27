@@ -27,6 +27,8 @@ namespace ProjectLight
         glm::dvec2 GetMouseDelta() const;
         glm::dvec2 GetScrollDelta() const;
 
+        void Reset();
+
     private:
         struct ButtonState
         {

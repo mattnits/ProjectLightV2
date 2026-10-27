@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ProjectLight/Core/Application.h"
+#include "ProjectLight/Input/Input.h"
 #include "ProjectLight/Window/Window.h"
 
 namespace ProjectLight
@@ -13,8 +14,10 @@ namespace ProjectLight
         void Run(Application& application);
 
         Window& GetWindow();
+        const Input& GetInput() const;
 
     private:
+        Input m_Input;
         Window m_Window;
     };
 }

@@ -91,4 +91,18 @@ namespace ProjectLight
     glm::dvec2 Input::GetScrollDelta() const {
         return m_ScrollDelta;
     };
+
+    void Input::Reset() {
+        for (auto& state : m_KeyStates) {
+            state = ButtonState{};
+        }
+
+        for (auto& state : m_MouseButtonStates) {
+            state = ButtonState{};
+        }
+
+        m_MouseDelta = glm::dvec2{0.0};
+        m_ScrollDelta = glm::dvec2{0.0};
+        m_HasMousePosition = false;
+    }
 }
