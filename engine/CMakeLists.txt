@@ -1,6 +1,8 @@
 add_library(ProjectLightEngine STATIC
     src/Core/Engine.cpp
     src/Window/Window.cpp
+    src/Core/FrameTimer.cpp
+    src/Input/Input.cpp
 )
 
 target_include_directories(ProjectLightEngine

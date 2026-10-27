@@ -2,20 +2,28 @@
 
 #include <glad/glad.h>
 
+#include "ProjectLight/Core/FrameTimer.h"
+#include "ProjectLight/Input/Input.h"
+
 namespace ProjectLight
 {
-    Engine::Engine() : m_Window(1280, 720, "ProjectLightV2") {}
+    Engine::Engine() : m_Window(m_Input, 1280, 720, "ProjectLightV2") {}
 
     void Engine::Run(Application& application) {
         application.OnStart();
+        FrameTimer frameTimer;
 
         while (!m_Window.ShouldClose()) {
+            m_Input.BeginFrame();
             m_Window.PollEvents();
+            const Timestep timestep = frameTimer.Tick();
+
+            application.OnUpdate(timestep);
 
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            application.OnUpdate();
+            application.OnRender();
 
             m_Window.SwapBuffers();
         }
@@ -25,5 +33,9 @@ namespace ProjectLight
 
     Window& Engine::GetWindow() {
         return m_Window;
+    }
+
+    const Input& Engine::GetInput() const {
+        return m_Input;
     }
 }

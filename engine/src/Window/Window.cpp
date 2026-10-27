@@ -2,11 +2,63 @@
 
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <optional>
 #include <stdexcept>
+
+#include "ProjectLight/Input/Input.h"
 
 namespace ProjectLight
 {
-    Window::Window(int width, int height, const std::string& title) {
+    namespace
+    {
+        std::optional<KeyCode> TranslateKey(int glfwKey) {
+            switch (glfwKey) {
+            case GLFW_KEY_W:
+                return KeyCode::W;
+            case GLFW_KEY_A:
+                return KeyCode::A;
+            case GLFW_KEY_S:
+                return KeyCode::S;
+            case GLFW_KEY_D:
+                return KeyCode::D;
+            case GLFW_KEY_Q:
+                return KeyCode::Q;
+            case GLFW_KEY_E:
+                return KeyCode::E;
+            case GLFW_KEY_F:
+                return KeyCode::F;
+            case GLFW_KEY_LEFT_SHIFT:
+                return KeyCode::LeftShift;
+            case GLFW_KEY_RIGHT_SHIFT:
+                return KeyCode::RightShift;
+            case GLFW_KEY_LEFT_ALT:
+                return KeyCode::LeftAlt;
+            case GLFW_KEY_RIGHT_ALT:
+                return KeyCode::RightAlt;
+            default:
+                return std::nullopt;
+            }
+        }
+
+        std::optional<MouseButton> TranslateMouseButton(int glfwButton) {
+            switch (glfwButton) {
+            case GLFW_MOUSE_BUTTON_LEFT:
+                return MouseButton::Left;
+            case GLFW_MOUSE_BUTTON_MIDDLE:
+                return MouseButton::Middle;
+            case GLFW_MOUSE_BUTTON_RIGHT:
+                return MouseButton::Right;
+            default:
+                return std::nullopt;
+            }
+        }
+
+        Window* GetWindowFromHandle(GLFWwindow* handle) {
+            return static_cast<Window*>(glfwGetWindowUserPointer(handle));
+        }
+    }
+
+    Window::Window(Input& input, int width, int height, const std::string& title) : m_Input(input) {
         if (!glfwInit()) {
             throw std::runtime_error("Failed to initialize GLFW");
         }
@@ -23,7 +75,15 @@ namespace ProjectLight
             throw std::runtime_error("Failed to create GLFW window");
         }
 
+        glfwSetWindowUserPointer(m_Window, this);
+        glfwSetKeyCallback(m_Window, OnKeyEvent);
+        glfwSetMouseButtonCallback(m_Window, OnMouseButtonEvent);
+        glfwSetCursorPosCallback(m_Window, OnCursorPosition);
+        glfwSetScrollCallback(m_Window, OnScroll);
+        glfwSetWindowFocusCallback(m_Window, OnWindowFocus);
+
         glfwMakeContextCurrent(m_Window);
+        SetVSync(true);
 
         if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
             glfwDestroyWindow(m_Window);
@@ -33,6 +93,10 @@ namespace ProjectLight
 
             throw std::runtime_error("Failed to initialize GLAD");
         }
+
+        const auto [framebufferWidth, framebufferHeight] = GetFramebufferSize();
+        OnFramebufferResize(m_Window, framebufferWidth, framebufferHeight);
+        glfwSetFramebufferSizeCallback(m_Window, OnFramebufferResize);
     }
 
     Window::~Window() {
@@ -58,4 +122,94 @@ namespace ProjectLight
     void* Window::GetNativeHandle() const {
         return m_Window;
     }
+
+    std::pair<int, int> Window::GetLogicalSize() const {
+        int width{};
+        int height{};
+        glfwGetWindowSize(m_Window, &width, &height);
+        return {width, height};
+    }
+
+    std::pair<int, int> Window::GetFramebufferSize() const {
+        int width{};
+        int height{};
+        glfwGetFramebufferSize(m_Window, &width, &height);
+        return {width, height};
+    }
+
+    void Window::OnFramebufferResize(GLFWwindow*, int width, int height) {
+        glViewport(0, 0, width, height);
+    }
+
+    void Window::SetVSync(bool enabled) {
+        glfwSwapInterval(enabled ? 1 : 0);
+    }
+
+    void Window::OnKeyEvent(GLFWwindow* glfwWindow, int key, int, int action, int) {
+        auto* window = GetWindowFromHandle(glfwWindow);
+        if (window == nullptr) {
+            return;
+        }
+
+        const std::optional<KeyCode> keyCode = TranslateKey(key);
+        // Ignore keys that aren't supported
+        if (!keyCode) {
+            return;
+        }
+
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            window->m_Input.UpdateKeyState(*keyCode, true);
+        } else if (action == GLFW_RELEASE) {
+            window->m_Input.UpdateKeyState(*keyCode, false);
+        }
+    }
+
+    void Window::OnMouseButtonEvent(GLFWwindow* glfwWindow, int button, int action, int) {
+        auto* window = GetWindowFromHandle(glfwWindow);
+        if (window == nullptr) {
+            return;
+        }
+
+        const std::optional<MouseButton> mouseButton = TranslateMouseButton(button);
+        // Ignore mouse buttons that aren't supported
+        if (!mouseButton) {
+            return;
+        }
+
+        if (action == GLFW_PRESS) {
+            window->m_Input.UpdateMouseButtonState(*mouseButton, true);
+        } else if (action == GLFW_RELEASE) {
+            window->m_Input.UpdateMouseButtonState(*mouseButton, false);
+        }
+    }
+
+    void Window::OnCursorPosition(GLFWwindow* glfwWindow, double x, double y) {
+        auto* window = GetWindowFromHandle(glfwWindow);
+        if (window == nullptr) {
+            return;
+        }
+        window->m_Input.UpdateMousePosition(x, y);
+    }
+
+    void Window::OnScroll(GLFWwindow* glfwWindow, double xOffset, double yOffset) {
+        auto* window = GetWindowFromHandle(glfwWindow);
+        if (window == nullptr) {
+            return;
+        }
+        window->m_Input.UpdateScrollDelta(xOffset, yOffset);
+    }
+
+    void Window::OnWindowFocus(GLFWwindow* glfwWindow, int focused) {
+        if (focused != GLFW_FALSE) {
+            return;
+        }
+
+        auto* window = GetWindowFromHandle(glfwWindow);
+        if (window == nullptr) {
+            return;
+        }
+
+        window->m_Input.Reset();
+    }
+
 }
