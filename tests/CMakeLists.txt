@@ -2,6 +2,7 @@ add_executable(ProjectLightTests
     Core/EngineTests.cpp
     Core/SmokeTest.cpp
     Core/FrameTimerTests.cpp
+    Core/InputTests.cpp
     Core/TimestepTests.cpp
 )
 
