@@ -19,5 +19,7 @@ namespace ProjectLight
     private:
         Input m_Input;
         Window m_Window;
+
+        void HandleEvent(const Event& event);
     };
 }

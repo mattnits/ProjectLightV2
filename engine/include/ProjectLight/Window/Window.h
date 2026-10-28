@@ -2,6 +2,9 @@
 
 #include <string>
 #include <utility>
+#include <vector>
+
+#include "ProjectLight/Core/Event.h"
 
 struct GLFWwindow;
 
@@ -39,15 +42,23 @@ namespace ProjectLight
 
         void SetVSync(bool enabled);
 
+        const std::vector<Event>& GetPendingEvents() const;
+        void ClearPendingEvents();
+
     private:
         static void OnFramebufferResize(GLFWwindow*, int width, int height);
         static void OnKeyEvent(GLFWwindow* glfwWindow, int key, int scancode, int action, int mods);
         static void OnMouseButtonEvent(GLFWwindow* glfwWindow, int button, int action, int mods);
         static void OnCursorPosition(GLFWwindow* glfwWindow, double x, double y);
         static void OnScroll(GLFWwindow* glfwWindow, double xOffset, double yOffset);
+
         static void OnWindowFocus(GLFWwindow* glfwWindow, int focused);
+        static void OnWindowClose(GLFWwindow* glfwWindow);
+        static void OnWindowResize(GLFWwindow* glfwWindow, int width, int height);
+        static void OnWindowMinimized(GLFWwindow* glfwWindow, int minimized);
 
         GLFWwindow* m_Window = nullptr;
         Input& m_Input;
+        std::vector<Event> m_PendingEvents;
     };
 }

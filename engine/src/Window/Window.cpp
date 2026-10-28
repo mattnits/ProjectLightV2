@@ -80,12 +80,18 @@ namespace ProjectLight
             throw std::runtime_error("Failed to create GLFW window");
         }
 
+        // GLFW callbacks
         glfwSetWindowUserPointer(m_Window, this);
+
         glfwSetKeyCallback(m_Window, OnKeyEvent);
         glfwSetMouseButtonCallback(m_Window, OnMouseButtonEvent);
         glfwSetCursorPosCallback(m_Window, OnCursorPosition);
         glfwSetScrollCallback(m_Window, OnScroll);
+
         glfwSetWindowFocusCallback(m_Window, OnWindowFocus);
+        glfwSetWindowCloseCallback(m_Window, OnWindowClose);
+        glfwSetWindowSizeCallback(m_Window, OnWindowResize);
+        glfwSetWindowIconifyCallback(m_Window, OnWindowMinimized);
 
         glfwMakeContextCurrent(m_Window);
         SetVSync(specification.VSync);
@@ -142,12 +148,16 @@ namespace ProjectLight
         return {width, height};
     }
 
-    void Window::OnFramebufferResize(GLFWwindow*, int width, int height) {
-        glViewport(0, 0, width, height);
-    }
-
     void Window::SetVSync(bool enabled) {
         glfwSwapInterval(enabled ? 1 : 0);
+    }
+
+    const std::vector<Event>& Window::GetPendingEvents() const {
+        return m_PendingEvents;
+    }
+
+    void Window::ClearPendingEvents() {
+        m_PendingEvents.clear();
     }
 
     void Window::OnKeyEvent(GLFWwindow* glfwWindow, int key, int, int action, int) {
@@ -205,16 +215,55 @@ namespace ProjectLight
     }
 
     void Window::OnWindowFocus(GLFWwindow* glfwWindow, int focused) {
-        if (focused != GLFW_FALSE) {
-            return;
-        }
-
         auto* window = GetWindowFromHandle(glfwWindow);
         if (window == nullptr) {
             return;
         }
 
-        window->m_Input.Reset();
+        const bool isFocused = focused == GLFW_TRUE;
+
+        if (!isFocused) {
+            window->m_Input.Reset();
+        }
+
+        window->m_PendingEvents.emplace_back(WindowFocusEvent{isFocused});
+    }
+
+    void Window::OnWindowClose(GLFWwindow* glfwWindow) {
+        auto* window = GetWindowFromHandle(glfwWindow);
+        if (window == nullptr) {
+            return;
+        }
+
+        window->m_PendingEvents.emplace_back(WindowCloseEvent{});
+    }
+
+    void Window::OnFramebufferResize(GLFWwindow* glfwWindow, int width, int height) {
+        auto* window = GetWindowFromHandle(glfwWindow);
+        if (window == nullptr) {
+            return;
+        }
+
+        window->m_PendingEvents.emplace_back(FramebufferResizeEvent{width, height});
+    }
+
+    void Window::OnWindowMinimized(GLFWwindow* glfwWindow, int minimized) {
+        auto* window = GetWindowFromHandle(glfwWindow);
+        if (window == nullptr) {
+            return;
+        }
+
+        const bool isMinimized = minimized == GLFW_TRUE;
+        window->m_PendingEvents.emplace_back(WindowMinimizedEvent{isMinimized});
+    }
+
+    void Window::OnWindowResize(GLFWwindow* glfwWindow, int width, int height) {
+        auto* window = GetWindowFromHandle(glfwWindow);
+        if (window == nullptr) {
+            return;
+        }
+
+        window->m_PendingEvents.emplace_back(WindowResizeEvent{width, height});
     }
 
 }
