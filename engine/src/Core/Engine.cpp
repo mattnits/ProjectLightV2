@@ -3,15 +3,19 @@
 #include <glad/glad.h>
 
 #include "ProjectLight/Core/FrameTimer.h"
+#include "ProjectLight/Core/Log.h"
 #include "ProjectLight/Input/Input.h"
 
 namespace ProjectLight
 {
     Engine::Engine(const WindowSpecification& windowSpecification)
-        : m_Window(m_Input, windowSpecification) {}
+        : m_Window(m_Input, windowSpecification) {
+        Log::Info("Engine initialized");
+    }
 
     void Engine::HandleEvent(const Event& event) {
         if (const auto* resizeEvent = std::get_if<FramebufferResizeEvent>(&event)) {
+            Log::Trace("Framebuffer resized to {}x{}", resizeEvent->Width, resizeEvent->Height);
             if (resizeEvent->Width > 0 && resizeEvent->Height > 0) {
                 glViewport(0, 0, resizeEvent->Width, resizeEvent->Height);
             }
@@ -19,6 +23,7 @@ namespace ProjectLight
     }
 
     void Engine::Run(Application& application) {
+        Log::Info("Application starting");
         application.OnStart();
         FrameTimer frameTimer;
 
@@ -45,6 +50,7 @@ namespace ProjectLight
         }
 
         application.OnShutdown();
+        Log::Info("Application shutdown complete");
     }
 
     Window& Engine::GetWindow() {

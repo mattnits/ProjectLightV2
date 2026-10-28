@@ -5,6 +5,7 @@
 #include <optional>
 #include <stdexcept>
 
+#include "ProjectLight/Core/Log.h"
 #include "ProjectLight/Input/Input.h"
 
 namespace ProjectLight
@@ -60,10 +61,13 @@ namespace ProjectLight
 
     Window::Window(Input& input, const WindowSpecification& specification) : m_Input(input) {
         if (specification.Width <= 0 || specification.Height <= 0) {
+            Log::Critical("Invalid window dimensions: {}x{}", specification.Width,
+                          specification.Height);
             throw std::invalid_argument("Window dimensions must be positive");
         }
 
         if (!glfwInit()) {
+            Log::Critical("Failed to initialize GLFW");
             throw std::runtime_error("Failed to initialize GLFW");
         }
 
@@ -76,6 +80,8 @@ namespace ProjectLight
                                     specification.Title.c_str(), nullptr, nullptr);
 
         if (!m_Window) {
+            Log::Critical("Failed to create window '{}' at {}x{}", specification.Title,
+                          specification.Width, specification.Height);
             glfwTerminate();
             throw std::runtime_error("Failed to create GLFW window");
         }
@@ -97,6 +103,7 @@ namespace ProjectLight
         SetVSync(specification.VSync);
 
         if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
+            Log::Critical("Failed to initialize GLAD");
             glfwDestroyWindow(m_Window);
             m_Window = nullptr;
 
@@ -108,9 +115,13 @@ namespace ProjectLight
         const auto [framebufferWidth, framebufferHeight] = GetFramebufferSize();
         OnFramebufferResize(m_Window, framebufferWidth, framebufferHeight);
         glfwSetFramebufferSizeCallback(m_Window, OnFramebufferResize);
+
+        Log::Info("Created window '{}' ({}x{}, VSync: {})", specification.Title,
+                  specification.Width, specification.Height, specification.VSync);
     }
 
     Window::~Window() {
+        Log::Debug("Destroying window");
         if (m_Window) {
             glfwDestroyWindow(m_Window);
         }

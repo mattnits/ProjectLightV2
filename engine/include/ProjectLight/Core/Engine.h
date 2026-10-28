@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ProjectLight/Core/Application.h"
+#include "ProjectLight/Core/Log.h"
 #include "ProjectLight/Input/Input.h"
 #include "ProjectLight/Window/Window.h"
 
@@ -17,6 +18,7 @@ namespace ProjectLight
         const Input& GetInput() const;
 
     private:
+        Log m_Log;
         Input m_Input;
         Window m_Window;
 
