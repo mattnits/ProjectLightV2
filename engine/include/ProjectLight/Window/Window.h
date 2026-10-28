@@ -7,16 +7,25 @@ struct GLFWwindow;
 
 namespace ProjectLight
 {
+
+    struct WindowSpecification
+    {
+        std::string Title = "ProjectLightV2";
+        int Width = 1280;
+        int Height = 720;
+        bool VSync = true;
+    };
+
     class Input;
     class Window
     {
     public:
-        Window(Input& input, int width, int height, const std::string& title);
-
+        Window(Input& input, const WindowSpecification& specification);
         ~Window();
-
         Window(const Window&) = delete;
         Window& operator=(const Window&) = delete;
+        Window(Window&&) = delete;
+        Window& operator=(Window&&) = delete;
 
         bool ShouldClose() const;
 

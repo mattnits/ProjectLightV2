@@ -58,7 +58,11 @@ namespace ProjectLight
         }
     }
 
-    Window::Window(Input& input, int width, int height, const std::string& title) : m_Input(input) {
+    Window::Window(Input& input, const WindowSpecification& specification) : m_Input(input) {
+        if (specification.Width <= 0 || specification.Height <= 0) {
+            throw std::invalid_argument("Window dimensions must be positive");
+        }
+
         if (!glfwInit()) {
             throw std::runtime_error("Failed to initialize GLFW");
         }
@@ -68,7 +72,8 @@ namespace ProjectLight
 
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        m_Window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+        m_Window = glfwCreateWindow(specification.Width, specification.Height,
+                                    specification.Title.c_str(), nullptr, nullptr);
 
         if (!m_Window) {
             glfwTerminate();
@@ -83,7 +88,7 @@ namespace ProjectLight
         glfwSetWindowFocusCallback(m_Window, OnWindowFocus);
 
         glfwMakeContextCurrent(m_Window);
-        SetVSync(true);
+        SetVSync(specification.VSync);
 
         if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
             glfwDestroyWindow(m_Window);

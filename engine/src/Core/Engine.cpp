@@ -7,7 +7,8 @@
 
 namespace ProjectLight
 {
-    Engine::Engine() : m_Window(m_Input, 1280, 720, "ProjectLightV2") {}
+    Engine::Engine(const WindowSpecification& windowSpecification)
+        : m_Window(m_Input, windowSpecification) {}
 
     void Engine::Run(Application& application) {
         application.OnStart();

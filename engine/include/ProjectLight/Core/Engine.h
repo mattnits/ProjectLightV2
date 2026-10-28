@@ -9,7 +9,7 @@ namespace ProjectLight
     class Engine
     {
     public:
-        Engine();
+        explicit Engine(const WindowSpecification& windowSpecification = {});
 
         void Run(Application& application);
 
