@@ -5,6 +5,7 @@
 #include <optional>
 #include <stdexcept>
 
+#include "ProjectLight/Core/Log.h"
 #include "ProjectLight/Input/Input.h"
 
 namespace ProjectLight
@@ -58,8 +59,15 @@ namespace ProjectLight
         }
     }
 
-    Window::Window(Input& input, int width, int height, const std::string& title) : m_Input(input) {
+    Window::Window(Input& input, const WindowSpecification& specification) : m_Input(input) {
+        if (specification.Width <= 0 || specification.Height <= 0) {
+            Log::Critical("Invalid window dimensions: {}x{}", specification.Width,
+                          specification.Height);
+            throw std::invalid_argument("Window dimensions must be positive");
+        }
+
         if (!glfwInit()) {
+            Log::Critical("Failed to initialize GLFW");
             throw std::runtime_error("Failed to initialize GLFW");
         }
 
@@ -68,24 +76,34 @@ namespace ProjectLight
 
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        m_Window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+        m_Window = glfwCreateWindow(specification.Width, specification.Height,
+                                    specification.Title.c_str(), nullptr, nullptr);
 
         if (!m_Window) {
+            Log::Critical("Failed to create window '{}' at {}x{}", specification.Title,
+                          specification.Width, specification.Height);
             glfwTerminate();
             throw std::runtime_error("Failed to create GLFW window");
         }
 
+        // GLFW callbacks
         glfwSetWindowUserPointer(m_Window, this);
+
         glfwSetKeyCallback(m_Window, OnKeyEvent);
         glfwSetMouseButtonCallback(m_Window, OnMouseButtonEvent);
         glfwSetCursorPosCallback(m_Window, OnCursorPosition);
         glfwSetScrollCallback(m_Window, OnScroll);
+
         glfwSetWindowFocusCallback(m_Window, OnWindowFocus);
+        glfwSetWindowCloseCallback(m_Window, OnWindowClose);
+        glfwSetWindowSizeCallback(m_Window, OnWindowResize);
+        glfwSetWindowIconifyCallback(m_Window, OnWindowMinimized);
 
         glfwMakeContextCurrent(m_Window);
-        SetVSync(true);
+        SetVSync(specification.VSync);
 
         if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
+            Log::Critical("Failed to initialize GLAD");
             glfwDestroyWindow(m_Window);
             m_Window = nullptr;
 
@@ -97,9 +115,13 @@ namespace ProjectLight
         const auto [framebufferWidth, framebufferHeight] = GetFramebufferSize();
         OnFramebufferResize(m_Window, framebufferWidth, framebufferHeight);
         glfwSetFramebufferSizeCallback(m_Window, OnFramebufferResize);
+
+        Log::Info("Created window '{}' ({}x{}, VSync: {})", specification.Title,
+                  specification.Width, specification.Height, specification.VSync);
     }
 
     Window::~Window() {
+        Log::Debug("Destroying window");
         if (m_Window) {
             glfwDestroyWindow(m_Window);
         }
@@ -137,12 +159,16 @@ namespace ProjectLight
         return {width, height};
     }
 
-    void Window::OnFramebufferResize(GLFWwindow*, int width, int height) {
-        glViewport(0, 0, width, height);
-    }
-
     void Window::SetVSync(bool enabled) {
         glfwSwapInterval(enabled ? 1 : 0);
+    }
+
+    const std::vector<Event>& Window::GetPendingEvents() const {
+        return m_PendingEvents;
+    }
+
+    void Window::ClearPendingEvents() {
+        m_PendingEvents.clear();
     }
 
     void Window::OnKeyEvent(GLFWwindow* glfwWindow, int key, int, int action, int) {
@@ -200,16 +226,55 @@ namespace ProjectLight
     }
 
     void Window::OnWindowFocus(GLFWwindow* glfwWindow, int focused) {
-        if (focused != GLFW_FALSE) {
-            return;
-        }
-
         auto* window = GetWindowFromHandle(glfwWindow);
         if (window == nullptr) {
             return;
         }
 
-        window->m_Input.Reset();
+        const bool isFocused = focused == GLFW_TRUE;
+
+        if (!isFocused) {
+            window->m_Input.Reset();
+        }
+
+        window->m_PendingEvents.emplace_back(WindowFocusEvent{isFocused});
+    }
+
+    void Window::OnWindowClose(GLFWwindow* glfwWindow) {
+        auto* window = GetWindowFromHandle(glfwWindow);
+        if (window == nullptr) {
+            return;
+        }
+
+        window->m_PendingEvents.emplace_back(WindowCloseEvent{});
+    }
+
+    void Window::OnFramebufferResize(GLFWwindow* glfwWindow, int width, int height) {
+        auto* window = GetWindowFromHandle(glfwWindow);
+        if (window == nullptr) {
+            return;
+        }
+
+        window->m_PendingEvents.emplace_back(FramebufferResizeEvent{width, height});
+    }
+
+    void Window::OnWindowMinimized(GLFWwindow* glfwWindow, int minimized) {
+        auto* window = GetWindowFromHandle(glfwWindow);
+        if (window == nullptr) {
+            return;
+        }
+
+        const bool isMinimized = minimized == GLFW_TRUE;
+        window->m_PendingEvents.emplace_back(WindowMinimizedEvent{isMinimized});
+    }
+
+    void Window::OnWindowResize(GLFWwindow* glfwWindow, int width, int height) {
+        auto* window = GetWindowFromHandle(glfwWindow);
+        if (window == nullptr) {
+            return;
+        }
+
+        window->m_PendingEvents.emplace_back(WindowResizeEvent{width, height});
     }
 
 }

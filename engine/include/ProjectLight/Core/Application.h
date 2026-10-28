@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ProjectLight/Core/Event.h"
 #include "ProjectLight/Core/Timestep.h"
 
 namespace ProjectLight
@@ -13,5 +14,7 @@ namespace ProjectLight
         virtual void OnUpdate(Timestep timestep) {}
         virtual void OnRender() {}
         virtual void OnShutdown() {}
+
+        virtual void OnEvent(const Event& event) {}
     };
 }

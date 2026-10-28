@@ -1,0 +1,8 @@
+#!/bin/sh
+
+powershell.exe \
+    -NoProfile \
+    -ExecutionPolicy Bypass \
+    -File scripts/check-format.ps1
+
+exit $?
