@@ -18,6 +18,7 @@ target_compile_features(ProjectLightEngine
 target_link_libraries(ProjectLightEngine
     PUBLIC
         glm::glm
+        spdlog::spdlog
     PRIVATE
         glfw
         glad
