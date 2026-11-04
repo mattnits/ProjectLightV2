@@ -23,6 +23,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+
       - name: Configure CMake
         run: cmake --preset windows-debug
 
