@@ -48,7 +48,7 @@ namespace ProjectLight
         const glm::quat orientation =
             glm::angleAxis(glm::radians(90.0F), glm::vec3{0.0F, 1.0F, 0.0F});
 
-        camera.SetOrientation(orientation);
+        ASSERT_TRUE(camera.SetOrientation(orientation));
 
         const glm::mat4 expected = glm::mat4_cast(glm::conjugate(orientation));
         ExpectMatrixNear(camera.GetViewMatrix(), expected);
@@ -57,12 +57,34 @@ namespace ProjectLight
     TEST(CameraTests, OrientationIsNormalized) {
         Camera camera;
 
-        camera.SetOrientation(glm::quat{2.0F, 0.0F, 0.0F, 0.0F});
+        ASSERT_TRUE(camera.SetOrientation(glm::quat{2.0F, 0.0F, 0.0F, 0.0F}));
 
         EXPECT_FLOAT_EQ(camera.GetOrientation().w, 1.0F);
         EXPECT_FLOAT_EQ(camera.GetOrientation().x, 0.0F);
         EXPECT_FLOAT_EQ(camera.GetOrientation().y, 0.0F);
         EXPECT_FLOAT_EQ(camera.GetOrientation().z, 0.0F);
+    }
+
+    TEST(CameraTests, InvalidOrientationPreservesPreviousOrientationAndView) {
+        Camera camera;
+        const glm::quat validOrientation =
+            glm::angleAxis(glm::radians(30.0F), glm::vec3{0.0F, 1.0F, 0.0F});
+        ASSERT_TRUE(camera.SetOrientation(validOrientation));
+
+        const glm::quat originalOrientation = camera.GetOrientation();
+        const glm::mat4 originalView = camera.GetViewMatrix();
+        const float nan = std::numeric_limits<float>::quiet_NaN();
+        const float infinity = std::numeric_limits<float>::infinity();
+
+        EXPECT_FALSE(camera.SetOrientation(glm::quat{0.0F, 0.0F, 0.0F, 0.0F}));
+        EXPECT_FALSE(camera.SetOrientation(glm::quat{nan, 0.0F, 0.0F, 0.0F}));
+        EXPECT_FALSE(camera.SetOrientation(glm::quat{infinity, 0.0F, 0.0F, 0.0F}));
+
+        EXPECT_FLOAT_EQ(camera.GetOrientation().w, originalOrientation.w);
+        EXPECT_FLOAT_EQ(camera.GetOrientation().x, originalOrientation.x);
+        EXPECT_FLOAT_EQ(camera.GetOrientation().y, originalOrientation.y);
+        EXPECT_FLOAT_EQ(camera.GetOrientation().z, originalOrientation.z);
+        ExpectMatrixNear(camera.GetViewMatrix(), originalView);
     }
 
     TEST(CameraTests, DefaultProjectionUsesRightHandedOpenGLDepthRange) {

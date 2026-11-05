@@ -4,6 +4,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/trigonometric.hpp>
+#include <limits>
 
 namespace ProjectLight
 {
@@ -69,9 +70,20 @@ namespace ProjectLight
         RecalculateViewMatrix();
     }
 
-    void Camera::SetOrientation(const glm::quat& orientation) {
+    bool Camera::SetOrientation(const glm::quat& orientation) {
+        const float lengthSquared = glm::dot(orientation, orientation);
+
+        const bool isFinite = std::isfinite(orientation.w) && std::isfinite(orientation.x) &&
+                              std::isfinite(orientation.y) && std::isfinite(orientation.z) &&
+                              std::isfinite(lengthSquared);
+
+        if (!isFinite || lengthSquared <= std::numeric_limits<float>::epsilon()) {
+            return false;
+        }
+
         m_Orientation = glm::normalize(orientation);
         RecalculateViewMatrix();
+        return true;
     }
 
     float Camera::GetVerticalFieldOfViewDegrees() const {

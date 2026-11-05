@@ -21,7 +21,7 @@ namespace ProjectLight
         [[nodiscard]] bool SetAspectRatio(float aspectRatio);
         [[nodiscard]] bool SetViewportSize(int width, int height);
         void SetPosition(const glm::vec3& position);
-        void SetOrientation(const glm::quat& orientation);
+        [[nodiscard]] bool SetOrientation(const glm::quat& orientation);
 
         float GetVerticalFieldOfViewDegrees() const;
         float GetNearClip() const;
