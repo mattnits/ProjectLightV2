@@ -1,6 +1,7 @@
 add_executable(ProjectLightEditor
     src/main.cpp
     src/EditorApplication.cpp
+    src/Camera/EditorCamera.cpp
     src/Panels/InspectorPanel.cpp
 )
 

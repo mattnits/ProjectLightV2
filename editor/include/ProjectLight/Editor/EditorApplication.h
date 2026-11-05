@@ -2,12 +2,14 @@
 
 #include "ProjectLight/Core/Application.h"
 #include "ProjectLight/Core/Timestep.h"
+#include "ProjectLight/Editor/Camera/EditorCamera.h"
 #include "ProjectLight/Editor/Panels/InspectorPanel.h"
 #include "ProjectLight/Scene/Components/TransformComponent.h"
 
 namespace ProjectLight
 {
     class Engine;
+    class Input;
 
     class EditorApplication : public Application
     {
@@ -20,8 +22,11 @@ namespace ProjectLight
         void OnShutdown() override;
 
     private:
+        void UpdateCapturedCameraControls(Timestep timestep, const Input& input);
+
         Engine& m_Engine;
         TransformComponent m_SelectedTransform{};
         InspectorPanel m_Inspector;
+        EditorCamera m_EditorCamera;
     };
 }

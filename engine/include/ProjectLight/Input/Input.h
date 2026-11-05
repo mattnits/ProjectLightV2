@@ -16,6 +16,7 @@ namespace ProjectLight
         void UpdateMouseButtonState(MouseButton button, bool isDown);
         void UpdateMousePosition(double x, double y);
         void UpdateScrollDelta(double x, double y);
+        void ResetMouseTracking();
 
         bool IsKeyDown(KeyCode key) const;
         bool WasKeyPressed(KeyCode key) const;

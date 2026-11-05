@@ -234,6 +234,7 @@ namespace ProjectLight
         const bool isFocused = focused == GLFW_TRUE;
 
         if (!isFocused) {
+            window->SetCursorMode(CursorMode::Normal);
             window->m_Input.Reset();
         }
 
@@ -275,6 +276,23 @@ namespace ProjectLight
         }
 
         window->m_PendingEvents.emplace_back(WindowResizeEvent{width, height});
+    }
+
+    void Window::SetCursorMode(CursorMode mode) {
+        if (m_CursorMode == mode) {
+            return;
+        }
+
+        const int glfwMode =
+            mode == CursorMode::Captured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL;
+
+        glfwSetInputMode(m_Window, GLFW_CURSOR, glfwMode);
+        m_Input.ResetMouseTracking();
+        m_CursorMode = mode;
+    }
+
+    CursorMode Window::GetCursorMode() const {
+        return m_CursorMode;
     }
 
 }
