@@ -1,4 +1,5 @@
 add_executable(ProjectLightTests
+    Core/CameraTests.cpp
     Core/EngineTests.cpp
     Core/SmokeTest.cpp
     Core/FrameTimerTests.cpp
