@@ -19,6 +19,12 @@ namespace ProjectLight
         bool VSync = true;
     };
 
+    enum class CursorMode
+    {
+        Normal,
+        Captured
+    };
+
     class Input;
     class Window
     {
@@ -45,6 +51,9 @@ namespace ProjectLight
         const std::vector<Event>& GetPendingEvents() const;
         void ClearPendingEvents();
 
+        void SetCursorMode(CursorMode mode);
+        CursorMode GetCursorMode() const;
+
     private:
         static void OnFramebufferResize(GLFWwindow*, int width, int height);
         static void OnKeyEvent(GLFWwindow* glfwWindow, int key, int scancode, int action, int mods);
@@ -60,5 +69,6 @@ namespace ProjectLight
         GLFWwindow* m_Window = nullptr;
         Input& m_Input;
         std::vector<Event> m_PendingEvents;
+        CursorMode m_CursorMode = CursorMode::Normal;
     };
 }

@@ -1,9 +1,11 @@
 add_library(ProjectLightEngine STATIC
+    src/Camera/Camera.cpp
     src/Core/Engine.cpp
     src/Core/FrameTimer.cpp
     src/Core/Log.cpp
     src/Input/Input.cpp
     src/Window/Window.cpp
+    
 )
 
 target_include_directories(ProjectLightEngine

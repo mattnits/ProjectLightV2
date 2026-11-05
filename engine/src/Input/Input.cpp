@@ -56,6 +56,11 @@ namespace ProjectLight
         m_ScrollDelta += glm::dvec2{x, y};
     }
 
+    void Input::ResetMouseTracking() {
+        m_MouseDelta = glm::dvec2{0.0};
+        m_HasMousePosition = false;
+    }
+
     bool Input::IsKeyDown(KeyCode key) const {
         return m_KeyStates[static_cast<std::size_t>(key)].down;
     };
