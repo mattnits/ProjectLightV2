@@ -5,11 +5,14 @@
 #include "ProjectLight/Core/FrameTimer.h"
 #include "ProjectLight/Core/Log.h"
 #include "ProjectLight/Input/Input.h"
+#include "ProjectLight/Renderer/OpenGL/OpenGLDebug.h"
 
 namespace ProjectLight
 {
     Engine::Engine(const WindowSpecification& windowSpecification)
         : m_Window(m_Input, windowSpecification) {
+        OpenGLDebug::Initialize();
+
         Log::Info("Engine initialized");
     }
 
