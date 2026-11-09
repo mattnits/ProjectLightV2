@@ -76,6 +76,10 @@ namespace ProjectLight
 
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+#ifndef NDEBUG
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif
+
         m_Window = glfwCreateWindow(specification.Width, specification.Height,
                                     specification.Title.c_str(), nullptr, nullptr);
 
