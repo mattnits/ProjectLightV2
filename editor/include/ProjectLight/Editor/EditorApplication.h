@@ -4,6 +4,7 @@
 #include "ProjectLight/Core/Timestep.h"
 #include "ProjectLight/Editor/Camera/EditorCamera.h"
 #include "ProjectLight/Editor/Panels/InspectorPanel.h"
+#include "ProjectLight/Editor/Panels/ViewportPanel.h"
 #include "ProjectLight/Scene/Components/TransformComponent.h"
 
 namespace ProjectLight
@@ -27,6 +28,7 @@ namespace ProjectLight
         Engine& m_Engine;
         TransformComponent m_SelectedTransform{};
         InspectorPanel m_Inspector;
+        ViewportPanel m_Viewport;
         EditorCamera m_EditorCamera;
     };
 }

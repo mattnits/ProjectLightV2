@@ -79,6 +79,7 @@ namespace ProjectLight
 #endif
 
         m_Inspector.OnImGuiRender();
+        m_Viewport.OnImGuiRender();
 
         ImGui::Render();
 
