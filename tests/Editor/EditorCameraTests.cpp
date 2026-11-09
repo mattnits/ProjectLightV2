@@ -152,6 +152,18 @@ namespace ProjectLight
         EXPECT_FLOAT_EQ(editorCamera.GetMovementSpeed(), 50.0F);
     }
 
+    TEST(EditorCameraTests, ViewportSizeUpdatesCameraAspectRatio) {
+        EditorCamera editorCamera;
+
+        ASSERT_TRUE(editorCamera.SetViewportSize(1600, 900));
+        EXPECT_NEAR(editorCamera.GetCamera().GetAspectRatio(), 16.0F / 9.0F, VectorTolerance);
+
+        const float validAspectRatio = editorCamera.GetCamera().GetAspectRatio();
+
+        EXPECT_FALSE(editorCamera.SetViewportSize(0, 900));
+        EXPECT_FLOAT_EQ(editorCamera.GetCamera().GetAspectRatio(), validAspectRatio);
+    }
+
     TEST(EditorCameraTests, FocusCentersValidTargetAtRequestedDistance) {
         EditorCamera editorCamera;
         const glm::vec3 target{2.0F, 3.0F, 4.0F};

@@ -138,4 +138,8 @@ namespace ProjectLight
     float EditorCamera::GetPivotDistance() const {
         return m_PivotDistance;
     }
+
+    bool EditorCamera::SetViewportSize(int width, int height) {
+        return m_Camera.SetViewportSize(width, height);
+    }
 }

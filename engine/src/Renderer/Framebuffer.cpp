@@ -1,6 +1,7 @@
 #include "ProjectLight/Renderer/Framebuffer.h"
 
 #include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <stdexcept>
 
 #include "ProjectLight/Core/Log.h"
@@ -85,6 +86,13 @@ namespace ProjectLight
         m_Specification.Height = height;
 
         CreateResources();
+    }
+
+    void Framebuffer::Clear(const glm::vec4& color) const {
+        glClearNamedFramebufferfv(m_RendererID, GL_COLOR, 0, glm::value_ptr(color));
+
+        constexpr float clearDepth = 1.0F;
+        glClearNamedFramebufferfv(m_RendererID, GL_DEPTH, 0, &clearDepth);
     }
 
     void Framebuffer::CreateResources() {

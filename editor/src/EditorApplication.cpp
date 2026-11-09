@@ -7,6 +7,7 @@
 #include <imgui_impl_opengl3.h>
 
 #include "ProjectLight/Core/Engine.h"
+#include "ProjectLight/Core/Log.h"
 #include "ProjectLight/Input/Input.h"
 
 namespace ProjectLight
@@ -37,18 +38,29 @@ namespace ProjectLight
     }
 
     void EditorApplication::OnUpdate(Timestep timestep) {
+        const glm::ivec2 viewportSize = m_Viewport.GetContentSize();
+
+        if (!m_EditorCamera.SetViewportSize(viewportSize.x, viewportSize.y)) {
+            Log::Warn("Editor camera rejected viewport size {}x{}", viewportSize.x, viewportSize.y);
+        }
+
         const Input& input = m_Engine.GetInput();
         Window& window = m_Engine.GetWindow();
 
+        const bool isViewportHovered = m_Viewport.IsHovered();
+        const bool isViewportFocused = m_Viewport.IsFocused();
         const bool isAltDown =
             input.IsKeyDown(KeyCode::LeftAlt) || input.IsKeyDown(KeyCode::RightAlt);
-        const bool isOrbiting = isAltDown && input.IsMouseButtonDown(MouseButton::Left);
 
-        if (input.WasMouseButtonPressed(MouseButton::Right)) {
+        const bool isOrbiting =
+            isViewportHovered && isAltDown && input.IsMouseButtonDown(MouseButton::Left);
+
+        if (isViewportHovered && input.WasMouseButtonPressed(MouseButton::Right)) {
             window.SetCursorMode(CursorMode::Captured);
         }
 
-        if (input.WasMouseButtonReleased(MouseButton::Right)) {
+        if (window.GetCursorMode() == CursorMode::Captured &&
+            input.WasMouseButtonReleased(MouseButton::Right)) {
             window.SetCursorMode(CursorMode::Normal);
         }
 
@@ -56,16 +68,21 @@ namespace ProjectLight
             UpdateCapturedCameraControls(timestep, input);
         } else if (isOrbiting) {
             m_EditorCamera.Orbit(input.GetMouseDelta());
-        } else if (input.IsMouseButtonDown(MouseButton::Middle)) {
+        } else if (isViewportHovered && input.IsMouseButtonDown(MouseButton::Middle)) {
             m_EditorCamera.Pan(input.GetMouseDelta());
         }
 
-        if (window.GetCursorMode() != CursorMode::Captured) {
+        if (window.GetCursorMode() != CursorMode::Captured && isViewportHovered) {
             m_EditorCamera.Zoom(input.GetScrollDelta().y);
         }
 
-        if (window.GetCursorMode() != CursorMode::Captured && input.WasKeyPressed(KeyCode::F)) {
-            static_cast<void>(m_EditorCamera.Focus(m_SelectedTransform.Translation));
+        if (window.GetCursorMode() != CursorMode::Captured && isViewportFocused &&
+            input.WasKeyPressed(KeyCode::F)) {
+            if (!m_EditorCamera.Focus(m_SelectedTransform.Translation)) {
+                const glm::vec3& target = m_SelectedTransform.Translation;
+                Log::Warn("Editor camera could not focus target ({}, {}, {})", target.x, target.y,
+                          target.z);
+            }
         }
     }
 

@@ -25,7 +25,12 @@ namespace ProjectLight
         float GetMovementSpeed() const;
         void AdjustMovementSpeed(double scrollDelta);
 
+        [[nodiscard]] bool SetViewportSize(int width, int height);
+
     private:
+        [[nodiscard]] bool UpdateOrientation(const glm::dvec2& mouseDelta);
+        glm::vec3 GetForwardDirection() const;
+
         Camera m_Camera;
         float m_YawDegrees = 0.0F;
         float m_PitchDegrees = 0.0F;
@@ -35,9 +40,5 @@ namespace ProjectLight
         float m_PivotDistance = 10.0F;
         float m_PanSensitivity = 0.01F;
         float m_ZoomSensitivity = 0.1F;
-
-        [[nodiscard]] bool UpdateOrientation(const glm::dvec2& mouseDelta);
-
-        glm::vec3 GetForwardDirection() const;
     };
 }
