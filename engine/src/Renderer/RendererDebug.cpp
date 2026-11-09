@@ -1,10 +1,10 @@
-#include "ProjectLight/Renderer/OpenGL/OpenGLDebug.h"
+#include "ProjectLight/Renderer/RendererDebug.h"
 
 #include <glad/glad.h>
 
 #include "ProjectLight/Core/Log.h"
 
-namespace ProjectLight::OpenGLDebug
+namespace ProjectLight::RendererDebug
 {
 #ifndef NDEBUG
     namespace

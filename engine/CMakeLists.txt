@@ -4,7 +4,8 @@ add_library(ProjectLightEngine STATIC
     src/Core/FrameTimer.cpp
     src/Core/Log.cpp
     src/Input/Input.cpp
-    src/Renderer/OpenGL/OpenGLDebug.cpp
+    src/Renderer/RendererDebug.cpp
+    src/Renderer/Framebuffer.cpp
     src/Window/Window.cpp
 )
 

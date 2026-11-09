@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ProjectLight::OpenGLDebug
+namespace ProjectLight::RendererDebug
 {
     void Initialize();
 }
