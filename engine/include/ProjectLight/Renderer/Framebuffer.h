@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <glm/vec4.hpp>
 
 namespace ProjectLight
 {
@@ -27,6 +28,7 @@ namespace ProjectLight
         void Bind() const;
         static void Unbind();
         void Resize(int width, int height);
+        void Clear(const glm::vec4& color) const;
 
         [[nodiscard]] std::uint32_t GetRendererID() const;
         [[nodiscard]] const FramebufferSpecification& GetSpecification() const;
