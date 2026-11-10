@@ -21,9 +21,12 @@ namespace ProjectLight
 
         if (isVisible) {
             const ImVec2 availableSize = ImGui::GetContentRegionAvail();
+            const ImVec2 framebufferScale = ImGui::GetWindowViewport()->FramebufferScale;
 
-            const int width = static_cast<int>(availableSize.x);
-            const int height = static_cast<int>(availableSize.y);
+            // 0.5F makes sure the framebuffer is the correct size by having the case round up or
+            // down
+            const int width = static_cast<int>(availableSize.x * framebufferScale.x + 0.5F);
+            const int height = static_cast<int>(availableSize.y * framebufferScale.y + 0.5F);
 
             if (width > 0 && height > 0) {
                 if (width != m_ContentSize.x || height != m_ContentSize.y) {

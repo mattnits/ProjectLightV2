@@ -8,6 +8,15 @@
 
 namespace ProjectLight
 {
+    struct EditorCameraState
+    {
+        glm::vec3 Pivot{0.0F, 0.0F, -10.0F};
+        float PivotDistance = 10.0F;
+        float YawDegrees = 0.0F;
+        float PitchDegrees = 0.0F;
+        float MovementSpeed = 5.0F;
+    };
+
     class EditorCamera
     {
     public:
@@ -26,6 +35,8 @@ namespace ProjectLight
         void AdjustMovementSpeed(double scrollDelta);
 
         [[nodiscard]] bool SetViewportSize(int width, int height);
+        [[nodiscard]] EditorCameraState GetState() const;
+        [[nodiscard]] bool SetState(const EditorCameraState& state);
 
     private:
         [[nodiscard]] bool UpdateOrientation(const glm::dvec2& mouseDelta);

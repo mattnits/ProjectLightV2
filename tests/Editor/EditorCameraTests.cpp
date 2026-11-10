@@ -22,6 +22,14 @@ namespace ProjectLight
             EXPECT_NEAR(actual.z, expected.z, VectorTolerance);
         }
 
+        void ExpectStateNear(const EditorCameraState& actual, const EditorCameraState& expected) {
+            ExpectVectorNear(actual.Pivot, expected.Pivot);
+            EXPECT_NEAR(actual.PivotDistance, expected.PivotDistance, VectorTolerance);
+            EXPECT_NEAR(actual.YawDegrees, expected.YawDegrees, VectorTolerance);
+            EXPECT_NEAR(actual.PitchDegrees, expected.PitchDegrees, VectorTolerance);
+            EXPECT_NEAR(actual.MovementSpeed, expected.MovementSpeed, VectorTolerance);
+        }
+
         glm::vec3 GetForwardDirection(const EditorCamera& editorCamera) {
             return editorCamera.GetCamera().GetOrientation() * glm::vec3{0.0F, 0.0F, -1.0F};
         }
@@ -69,6 +77,21 @@ namespace ProjectLight
         ExpectVectorNear(oneStepCamera.GetCamera().GetPosition(), glm::vec3{0.0F, 0.0F, -5.0F});
         ExpectPivotRelationship(oneStepCamera);
         ExpectPivotRelationship(twoStepCamera);
+    }
+
+    TEST(EditorCameraTests, MovementUsesUpdatedCameraOrientation) {
+        EditorCamera editorCamera;
+
+        editorCamera.Rotate(glm::dvec2{900.0, 0.0});
+
+        const glm::vec3 originalPosition = editorCamera.GetCamera().GetPosition();
+        const glm::vec3 expectedTranslation = GetForwardDirection(editorCamera) * 5.0F;
+
+        editorCamera.Move(glm::vec3{0.0F, 0.0F, 1.0F}, MakeTimestep(1.0));
+
+        ExpectVectorNear(editorCamera.GetCamera().GetPosition() - originalPosition,
+                         expectedTranslation);
+        ExpectPivotRelationship(editorCamera);
     }
 
     TEST(EditorCameraTests, DiagonalMovementDoesNotIncreaseSpeed) {
@@ -162,6 +185,47 @@ namespace ProjectLight
 
         EXPECT_FALSE(editorCamera.SetViewportSize(0, 900));
         EXPECT_FLOAT_EQ(editorCamera.GetCamera().GetAspectRatio(), validAspectRatio);
+    }
+
+    TEST(EditorCameraTests, ValidStateRoundTripRestoresCamera) {
+        EditorCamera originalCamera;
+
+        originalCamera.Rotate(glm::dvec2{-350.0, 120.0});
+        ASSERT_TRUE(originalCamera.Focus(glm::vec3{2.0F, 3.0F, 4.0F}, 7.0F));
+        originalCamera.AdjustMovementSpeed(4.0);
+
+        const EditorCameraState savedState = originalCamera.GetState();
+
+        EditorCamera restoredCamera;
+        ASSERT_TRUE(restoredCamera.SetState(savedState));
+
+        ExpectStateNear(restoredCamera.GetState(), savedState);
+        ExpectVectorNear(restoredCamera.GetCamera().GetPosition(),
+                         originalCamera.GetCamera().GetPosition());
+        ExpectVectorNear(GetForwardDirection(restoredCamera), GetForwardDirection(originalCamera));
+        ExpectPivotRelationship(restoredCamera);
+    }
+
+    TEST(EditorCameraTests, InvalidStatePreservesCamera) {
+        EditorCamera editorCamera;
+        editorCamera.Rotate(glm::dvec2{200.0, -100.0});
+        editorCamera.Move(glm::vec3{1.0F, 0.0F, 1.0F}, MakeTimestep(0.5));
+
+        const EditorCameraState originalState = editorCamera.GetState();
+        const glm::vec3 originalPosition = editorCamera.GetCamera().GetPosition();
+
+        EditorCameraState invalidState = originalState;
+        invalidState.Pivot.x = std::numeric_limits<float>::quiet_NaN();
+
+        EXPECT_FALSE(editorCamera.SetState(invalidState));
+
+        invalidState = originalState;
+        invalidState.PitchDegrees = 90.0F;
+
+        EXPECT_FALSE(editorCamera.SetState(invalidState));
+
+        ExpectStateNear(editorCamera.GetState(), originalState);
+        ExpectVectorNear(editorCamera.GetCamera().GetPosition(), originalPosition);
     }
 
     TEST(EditorCameraTests, FocusCentersValidTargetAtRequestedDistance) {

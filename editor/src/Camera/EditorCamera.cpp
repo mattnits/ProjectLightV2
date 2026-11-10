@@ -7,6 +7,30 @@
 
 namespace ProjectLight
 {
+    namespace
+    {
+        constexpr float MinimumPivotDistance = 0.1F;
+        constexpr float MaximumPivotDistance = 1000.0F;
+        constexpr float MinimumMovementSpeed = 0.5F;
+        constexpr float MaximumMovementSpeed = 50.0F;
+        constexpr float MinimumPitchDegrees = -89.0F;
+        constexpr float MaximumPitchDegrees = 89.0F;
+
+        bool IsFinite(const glm::vec3& value) {
+            return std::isfinite(value.x) && std::isfinite(value.y) && std::isfinite(value.z);
+        }
+
+        glm::quat MakeOrientation(float yawDegrees, float pitchDegrees) {
+            const glm::quat yawRotation =
+                glm::angleAxis(glm::radians(yawDegrees), glm::vec3{0.0F, 1.0F, 0.0F});
+
+            const glm::quat pitchRotation =
+                glm::angleAxis(glm::radians(pitchDegrees), glm::vec3{1.0F, 0.0F, 0.0F});
+
+            return yawRotation * pitchRotation;
+        }
+    }
+
     const Camera& EditorCamera::GetCamera() const {
         return m_Camera;
     }
@@ -72,29 +96,23 @@ namespace ProjectLight
             return;
         }
 
-        constexpr float MinimumDistance = 0.1F;
-        constexpr float MaximumDistance = 1000.0F;
-
         const float zoomAmount =
             static_cast<float>(scrollDelta) * m_ZoomSensitivity * m_PivotDistance;
 
         m_PivotDistance =
-            std::clamp(m_PivotDistance - zoomAmount, MinimumDistance, MaximumDistance);
+            std::clamp(m_PivotDistance - zoomAmount, MinimumPivotDistance, MaximumPivotDistance);
         m_Camera.SetPosition(m_Pivot - GetForwardDirection() * m_PivotDistance);
     }
 
     bool EditorCamera::Focus(const glm::vec3& target, float distance) {
-        const bool targetIsFinite =
-            std::isfinite(target.x) && std::isfinite(target.y) && std::isfinite(target.z);
+        const bool targetIsFinite = IsFinite(target);
 
         if (!targetIsFinite || !std::isfinite(distance) || distance <= 0.0F) {
             return false;
         }
 
-        constexpr float MinimumDistance = 0.1F;
-        constexpr float MaximumDistance = 1000.0F;
         m_Pivot = target;
-        m_PivotDistance = std::clamp(distance, MinimumDistance, MaximumDistance);
+        m_PivotDistance = std::clamp(distance, MinimumPivotDistance, MaximumPivotDistance);
 
         m_Camera.SetPosition(m_Pivot - GetForwardDirection() * m_PivotDistance);
 
@@ -106,29 +124,8 @@ namespace ProjectLight
     }
 
     void EditorCamera::AdjustMovementSpeed(double scrollDelta) {
-        constexpr float MinimumSpeed = 0.5F;
-        constexpr float MaximumSpeed = 50.0F;
-
         m_MovementSpeed += static_cast<float>(scrollDelta);
-        m_MovementSpeed = std::clamp(m_MovementSpeed, MinimumSpeed, MaximumSpeed);
-    }
-
-    bool EditorCamera::UpdateOrientation(const glm::dvec2& mouseDelta) {
-        m_YawDegrees -= static_cast<float>(mouseDelta.x) * m_MouseSensitivity;
-        m_PitchDegrees -= static_cast<float>(mouseDelta.y) * m_MouseSensitivity;
-        m_PitchDegrees = std::clamp(m_PitchDegrees, -89.0F, 89.0F);
-
-        const glm::quat yawRotation =
-            glm::angleAxis(glm::radians(m_YawDegrees), glm::vec3{0.0F, 1.0F, 0.0F});
-
-        const glm::quat pitchRotation =
-            glm::angleAxis(glm::radians(m_PitchDegrees), glm::vec3{1.0F, 0.0F, 0.0F});
-
-        return m_Camera.SetOrientation(yawRotation * pitchRotation);
-    }
-
-    glm::vec3 EditorCamera::GetForwardDirection() const {
-        return m_Camera.GetOrientation() * glm::vec3{0.0F, 0.0F, -1.0F};
+        m_MovementSpeed = std::clamp(m_MovementSpeed, MinimumMovementSpeed, MaximumMovementSpeed);
     }
 
     const glm::vec3& EditorCamera::GetPivot() const {
@@ -141,5 +138,59 @@ namespace ProjectLight
 
     bool EditorCamera::SetViewportSize(int width, int height) {
         return m_Camera.SetViewportSize(width, height);
+    }
+
+    EditorCameraState EditorCamera::GetState() const {
+        EditorCameraState state;
+        state.Pivot = m_Pivot;
+        state.PivotDistance = m_PivotDistance;
+        state.YawDegrees = m_YawDegrees;
+        state.PitchDegrees = m_PitchDegrees;
+        state.MovementSpeed = m_MovementSpeed;
+        return state;
+    }
+
+    bool EditorCamera::SetState(const EditorCameraState& state) {
+        const bool valuesAreFinite = IsFinite(state.Pivot) && std::isfinite(state.PivotDistance) &&
+                                     std::isfinite(state.YawDegrees) &&
+                                     std::isfinite(state.PitchDegrees) &&
+                                     std::isfinite(state.MovementSpeed);
+        const bool valuesAreInRange = state.PivotDistance >= MinimumPivotDistance &&
+                                      state.PivotDistance <= MaximumPivotDistance &&
+                                      state.PitchDegrees >= MinimumPitchDegrees &&
+                                      state.PitchDegrees <= MaximumPitchDegrees &&
+                                      state.MovementSpeed >= MinimumMovementSpeed &&
+                                      state.MovementSpeed <= MaximumMovementSpeed;
+        if (!valuesAreFinite || !valuesAreInRange) {
+            return false;
+        }
+
+        const glm::quat orientation = MakeOrientation(state.YawDegrees, state.PitchDegrees);
+
+        if (!m_Camera.SetOrientation(orientation)) {
+            return false;
+        }
+
+        m_Pivot = state.Pivot;
+        m_PivotDistance = state.PivotDistance;
+        m_YawDegrees = state.YawDegrees;
+        m_PitchDegrees = state.PitchDegrees;
+        m_MovementSpeed = state.MovementSpeed;
+
+        m_Camera.SetPosition(m_Pivot - GetForwardDirection() * m_PivotDistance);
+
+        return true;
+    }
+
+    bool EditorCamera::UpdateOrientation(const glm::dvec2& mouseDelta) {
+        m_YawDegrees -= static_cast<float>(mouseDelta.x) * m_MouseSensitivity;
+        m_PitchDegrees -= static_cast<float>(mouseDelta.y) * m_MouseSensitivity;
+        m_PitchDegrees = std::clamp(m_PitchDegrees, MinimumPitchDegrees, MaximumPitchDegrees);
+
+        return m_Camera.SetOrientation(MakeOrientation(m_YawDegrees, m_PitchDegrees));
+    }
+
+    glm::vec3 EditorCamera::GetForwardDirection() const {
+        return m_Camera.GetOrientation() * glm::vec3{0.0F, 0.0F, -1.0F};
     }
 }

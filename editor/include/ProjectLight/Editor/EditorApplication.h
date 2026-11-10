@@ -24,6 +24,8 @@ namespace ProjectLight
 
     private:
         void UpdateCapturedCameraControls(Timestep timestep, const Input& input);
+        void LoadEditorCameraState();
+        void SaveEditorCameraState() const;
 
         Engine& m_Engine;
         TransformComponent m_SelectedTransform{};
