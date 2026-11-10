@@ -9,6 +9,8 @@ add_library(ProjectLightEngine STATIC
     src/Window/Window.cpp
     src/Renderer/Renderer.cpp
     src/Renderer/Shader.cpp
+    src/Renderer/VertexBuffer.cpp
+    src/Renderer/VertexArray.cpp
 )
 
 target_include_directories(ProjectLightEngine
