@@ -1,6 +1,8 @@
 #include "ProjectLight/Editor/EditorApplication.h"
 
 #include <GLFW/glfw3.h>
+#include <algorithm>
+#include <cmath>
 #include <filesystem>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -89,21 +91,10 @@ namespace ProjectLight
         const double scrollDelta = input.GetScrollDelta().y;
         if (window.GetCursorMode() != CursorMode::Captured && isViewportHovered &&
             scrollDelta != 0.0) {
-
-            std::optional<glm::vec3> zoomTarget;
-            const std::optional<glm::vec2> mousePosition = m_Viewport.GetNormalizedMousePosition();
-
-            if (mousePosition.has_value()) {
-                const Camera& camera = m_EditorCamera.GetCamera();
-                const Ray mouseRay = camera.CreateViewportRay(*mousePosition);
-                zoomTarget = IntersectHorizontalPlane(mouseRay, 0.0F);
-            }
-
-            if (zoomTarget.has_value()) {
-                m_EditorCamera.Zoom(scrollDelta, *zoomTarget);
-            } else {
-                m_EditorCamera.Zoom(scrollDelta);
-            }
+            const glm::vec2 mousePosition =
+                m_Viewport.GetNormalizedMousePosition().value_or(glm::vec2{0.5F, 0.5F});
+            const Ray mouseRay = m_EditorCamera.GetCamera().CreateViewportRay(mousePosition);
+            m_EditorCamera.Dolly(scrollDelta, mouseRay.Direction);
         }
 
         if (window.GetCursorMode() != CursorMode::Captured && isViewportFocused &&
@@ -134,9 +125,11 @@ namespace ProjectLight
 
         const glm::mat4 viewProjectionMatrix =
             camera.GetProjectionMatrix() * camera.GetViewMatrix();
+        const float gridScaleDistance =
+            std::max(std::abs(camera.GetPosition().y), m_EditorCamera.GetPivotDistance());
 
         m_GridRenderer.Render(m_Engine.GetRenderer(), viewProjectionMatrix,
-                              m_EditorCamera.GetPivot(), m_EditorCamera.GetPivotDistance());
+                              m_EditorCamera.GetPivot(), gridScaleDistance);
         m_Viewport.EndRender();
 
         ImGui::Render();
