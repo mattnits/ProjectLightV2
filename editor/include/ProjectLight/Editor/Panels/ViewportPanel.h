@@ -11,6 +11,8 @@ namespace ProjectLight
     public:
         ViewportPanel();
 
+        void BeginRender();
+        void EndRender();
         void OnImGuiRender();
 
         [[nodiscard]] glm::ivec2 GetContentSize() const;

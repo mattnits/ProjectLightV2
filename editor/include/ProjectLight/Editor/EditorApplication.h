@@ -5,6 +5,7 @@
 #include "ProjectLight/Editor/Camera/EditorCamera.h"
 #include "ProjectLight/Editor/Panels/InspectorPanel.h"
 #include "ProjectLight/Editor/Panels/ViewportPanel.h"
+#include "ProjectLight/Editor/Renderer/GridRenderer.h"
 #include "ProjectLight/Scene/Components/TransformComponent.h"
 
 namespace ProjectLight
@@ -32,5 +33,7 @@ namespace ProjectLight
         InspectorPanel m_Inspector;
         ViewportPanel m_Viewport;
         EditorCamera m_EditorCamera;
+
+        GridRenderer m_GridRenderer;
     };
 }

@@ -2,6 +2,7 @@
 
 #include <GLFW/glfw3.h>
 #include <filesystem>
+#include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -108,6 +109,16 @@ namespace ProjectLight
 
         m_Inspector.OnImGuiRender();
         m_Viewport.OnImGuiRender();
+
+        m_Viewport.BeginRender();
+
+        const Camera& camera = m_EditorCamera.GetCamera();
+
+        const glm::mat4 viewProjectionMatrix =
+            camera.GetProjectionMatrix() * camera.GetViewMatrix();
+
+        m_GridRenderer.Render(m_Engine.GetRenderer(), viewProjectionMatrix);
+        m_Viewport.EndRender();
 
         ImGui::Render();
 

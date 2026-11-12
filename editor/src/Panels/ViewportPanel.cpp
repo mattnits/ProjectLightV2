@@ -34,8 +34,6 @@ namespace ProjectLight
                     m_Framebuffer.Resize(width, height);
                 }
 
-                m_Framebuffer.Clear(glm::vec4{0.12F, 0.14F, 0.18F, 1.0F});
-
                 const ImTextureID textureID =
                     static_cast<ImTextureID>(m_Framebuffer.GetColorAttachmentRendererID());
 
@@ -46,6 +44,15 @@ namespace ProjectLight
         }
 
         ImGui::End();
+    }
+
+    void ViewportPanel::BeginRender() {
+        m_Framebuffer.Bind();
+        m_Framebuffer.Clear(glm::vec4{0.12F, 0.14F, 0.18F, 1.0F});
+    }
+
+    void ViewportPanel::EndRender() {
+        Framebuffer::Unbind();
     }
 
     glm::ivec2 ViewportPanel::GetContentSize() const {
