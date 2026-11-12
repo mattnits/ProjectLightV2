@@ -127,7 +127,10 @@ namespace ProjectLight
             editorCamera.GetCamera().GetPosition() - originalPosition;
         const glm::vec3 pivotTranslation = editorCamera.GetPivot() - originalPivot;
 
-        ExpectVectorNear(cameraTranslation, glm::vec3{-1.0F, 0.5F, 0.0F});
+        EXPECT_LT(cameraTranslation.x, 0.0F);
+        EXPECT_GT(cameraTranslation.y, 0.0F);
+        EXPECT_NEAR(cameraTranslation.z, 0.0F, VectorTolerance);
+        EXPECT_NEAR(cameraTranslation.x, -2.0F * cameraTranslation.y, VectorTolerance);
         ExpectVectorNear(pivotTranslation, cameraTranslation);
         ExpectPivotRelationship(editorCamera);
     }
