@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
 #include <string_view>
 
 namespace ProjectLight
@@ -16,6 +17,8 @@ namespace ProjectLight
         static void Unbind();
 
         void SetMatrix4(std::string_view name, const glm::mat4& value) const;
+        void SetFloat(std::string_view name, float value) const;
+        void SetVector2(std::string_view name, const glm::vec2& value) const;
 
         Shader(const Shader&) = delete;
         Shader& operator=(const Shader&) = delete;

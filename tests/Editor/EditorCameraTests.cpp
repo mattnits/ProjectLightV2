@@ -127,7 +127,7 @@ namespace ProjectLight
             editorCamera.GetCamera().GetPosition() - originalPosition;
         const glm::vec3 pivotTranslation = editorCamera.GetPivot() - originalPivot;
 
-        ExpectVectorNear(cameraTranslation, glm::vec3{-1.0F, 0.5F, 0.0F});
+        ExpectVectorNear(cameraTranslation, glm::vec3{-10.0F, 5.0F, 0.0F});
         ExpectVectorNear(pivotTranslation, cameraTranslation);
         ExpectPivotRelationship(editorCamera);
     }
@@ -154,12 +154,43 @@ namespace ProjectLight
         ExpectPivotRelationship(editorCamera);
 
         editorCamera.Zoom(1000000.0);
-        EXPECT_FLOAT_EQ(editorCamera.GetPivotDistance(), 0.1F);
+        EXPECT_FLOAT_EQ(editorCamera.GetPivotDistance(), 0.5F);
         ExpectPivotRelationship(editorCamera);
 
         editorCamera.Zoom(-1000000.0);
         EXPECT_FLOAT_EQ(editorCamera.GetPivotDistance(), 1000.0F);
         ExpectPivotRelationship(editorCamera);
+    }
+
+    TEST(EditorCameraTests, TargetedZoomMovesCameraAndPivotTowardTargetProportionally) {
+        EditorCamera editorCamera;
+        const glm::vec3 target{5.0F, 2.0F, -20.0F};
+        const glm::vec3 originalPosition = editorCamera.GetCamera().GetPosition();
+        const glm::vec3 originalPivot = editorCamera.GetPivot();
+
+        editorCamera.Zoom(1.0, target);
+
+        constexpr float expectedScale = 0.9F;
+        const glm::vec3 expectedPosition = target + (originalPosition - target) * expectedScale;
+        const glm::vec3 expectedPivot = target + (originalPivot - target) * expectedScale;
+
+        ExpectVectorNear(editorCamera.GetCamera().GetPosition(), expectedPosition);
+        ExpectVectorNear(editorCamera.GetPivot(), expectedPivot);
+        EXPECT_NEAR(editorCamera.GetPivotDistance(), 9.0F, VectorTolerance);
+        ExpectPivotRelationship(editorCamera);
+    }
+
+    TEST(EditorCameraTests, TargetedZoomRejectsInvalidInput) {
+        EditorCamera editorCamera;
+        const EditorCameraState originalState = editorCamera.GetState();
+        const glm::vec3 originalPosition = editorCamera.GetCamera().GetPosition();
+        const float nan = std::numeric_limits<float>::quiet_NaN();
+
+        editorCamera.Zoom(std::numeric_limits<double>::infinity(), glm::vec3{0.0F});
+        editorCamera.Zoom(1.0, glm::vec3{nan, 0.0F, 0.0F});
+
+        ExpectStateNear(editorCamera.GetState(), originalState);
+        ExpectVectorNear(editorCamera.GetCamera().GetPosition(), originalPosition);
     }
 
     TEST(EditorCameraTests, MovementSpeedAdjustmentRespectsBounds) {

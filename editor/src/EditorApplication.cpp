@@ -7,12 +7,14 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <optional>
 #include <system_error>
 
 #include "ProjectLight/Core/Engine.h"
 #include "ProjectLight/Core/Log.h"
 #include "ProjectLight/Editor/Camera/EditorCameraPersistence.h"
 #include "ProjectLight/Input/Input.h"
+#include "ProjectLight/Math/Ray.h"
 
 namespace ProjectLight
 {
@@ -84,8 +86,24 @@ namespace ProjectLight
             m_EditorCamera.Pan(input.GetMouseDelta());
         }
 
-        if (window.GetCursorMode() != CursorMode::Captured && isViewportHovered) {
-            m_EditorCamera.Zoom(input.GetScrollDelta().y);
+        const double scrollDelta = input.GetScrollDelta().y;
+        if (window.GetCursorMode() != CursorMode::Captured && isViewportHovered &&
+            scrollDelta != 0.0) {
+
+            std::optional<glm::vec3> zoomTarget;
+            const std::optional<glm::vec2> mousePosition = m_Viewport.GetNormalizedMousePosition();
+
+            if (mousePosition.has_value()) {
+                const Camera& camera = m_EditorCamera.GetCamera();
+                const Ray mouseRay = camera.CreateViewportRay(*mousePosition);
+                zoomTarget = IntersectHorizontalPlane(mouseRay, 0.0F);
+            }
+
+            if (zoomTarget.has_value()) {
+                m_EditorCamera.Zoom(scrollDelta, *zoomTarget);
+            } else {
+                m_EditorCamera.Zoom(scrollDelta);
+            }
         }
 
         if (window.GetCursorMode() != CursorMode::Captured && isViewportFocused &&
@@ -108,7 +126,7 @@ namespace ProjectLight
 #endif
 
         m_Inspector.OnImGuiRender();
-        m_Viewport.OnImGuiRender();
+        m_Viewport.OnImGuiRender(m_EditorCamera.GetCamera().GetOrientation());
 
         m_Viewport.BeginRender();
 
@@ -117,7 +135,8 @@ namespace ProjectLight
         const glm::mat4 viewProjectionMatrix =
             camera.GetProjectionMatrix() * camera.GetViewMatrix();
 
-        m_GridRenderer.Render(m_Engine.GetRenderer(), viewProjectionMatrix);
+        m_GridRenderer.Render(m_Engine.GetRenderer(), viewProjectionMatrix,
+                              m_EditorCamera.GetPivot(), m_EditorCamera.GetPivotDistance());
         m_Viewport.EndRender();
 
         ImGui::Render();

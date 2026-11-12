@@ -6,6 +6,7 @@ add_executable(ProjectLightTests
     Core/SmokeTest.cpp
     Core/FrameTimerTests.cpp
     Core/InputTests.cpp
+    Core/RayTests.cpp
     Core/TimestepTests.cpp
     Editor/EditorCameraTests.cpp
     Editor/EditorCameraPersistenceTests.cpp

@@ -27,6 +27,7 @@ namespace ProjectLight
         void Pan(const glm::dvec2& mouseDelta);
         void Orbit(const glm::dvec2& mouseDelta);
         void Zoom(double scrollDelta);
+        void Zoom(double scrollDelta, const glm::vec3& target);
         [[nodiscard]] bool Focus(const glm::vec3& target, float distance = 10.0F);
 
         const glm::vec3& GetPivot() const;
@@ -49,7 +50,7 @@ namespace ProjectLight
         float m_MovementSpeed = 5.0F;
         glm::vec3 m_Pivot{0.0F, 0.0F, -10.0F};
         float m_PivotDistance = 10.0F;
-        float m_PanSensitivity = 0.05F;
+        float m_PanSensitivity = 0.1F;
         float m_ZoomSensitivity = 0.1F;
     };
 }

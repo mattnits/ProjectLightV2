@@ -7,10 +7,18 @@
 namespace ProjectLight
 {
     class VertexArray;
+
+    enum class BufferUsage
+    {
+        Static,
+        Dynamic
+    };
+
     class VertexBuffer
     {
     public:
-        explicit VertexBuffer(std::span<const std::byte> data);
+        explicit VertexBuffer(std::span<const std::byte> data,
+                              BufferUsage usage = BufferUsage::Static);
         ~VertexBuffer();
 
         VertexBuffer(const VertexBuffer&) = delete;
@@ -23,9 +31,13 @@ namespace ProjectLight
 
         [[nodiscard]] std::size_t GetSize() const;
 
+        void SetData(std::span<const std::byte> data);
+
     private:
         std::uint32_t m_RendererID{};
         std::size_t m_Size{};
+        BufferUsage m_Usage;
+
         friend class VertexArray;
     };
 }

@@ -9,7 +9,7 @@ namespace ProjectLight
 {
     namespace
     {
-        constexpr float MinimumPivotDistance = 0.1F;
+        constexpr float MinimumPivotDistance = 0.5F;
         constexpr float MaximumPivotDistance = 1000.0F;
         constexpr float MinimumMovementSpeed = 0.5F;
         constexpr float MaximumMovementSpeed = 50.0F;
@@ -92,15 +92,23 @@ namespace ProjectLight
     }
 
     void EditorCamera::Zoom(double scrollDelta) {
-        if (scrollDelta == 0.0) {
+        Zoom(scrollDelta, m_Pivot);
+    }
+
+    void EditorCamera::Zoom(double scrollDelta, const glm::vec3& target) {
+        if (scrollDelta == 0.0 || !std::isfinite(scrollDelta) || !IsFinite(target)) {
             return;
         }
 
-        const float zoomAmount =
-            static_cast<float>(scrollDelta) * m_ZoomSensitivity * m_PivotDistance;
+        const float requestedScale =
+            std::pow(1.0F - m_ZoomSensitivity, static_cast<float>(scrollDelta));
+        const float newDistance = std::clamp(m_PivotDistance * requestedScale, MinimumPivotDistance,
+                                             MaximumPivotDistance);
+        const float appliedScale = newDistance / m_PivotDistance;
 
-        m_PivotDistance =
-            std::clamp(m_PivotDistance - zoomAmount, MinimumPivotDistance, MaximumPivotDistance);
+        m_Pivot = target + (m_Pivot - target) * appliedScale;
+        m_PivotDistance = newDistance;
+
         m_Camera.SetPosition(m_Pivot - GetForwardDirection() * m_PivotDistance);
     }
 

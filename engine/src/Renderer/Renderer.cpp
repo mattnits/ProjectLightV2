@@ -57,6 +57,9 @@ namespace ProjectLight
     Renderer::Renderer() {
         RendererDebug::Initialize();
 
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         m_Capabilities.Vendor = QueryString(GL_VENDOR);
         m_Capabilities.Device = QueryString(GL_RENDERER);
         m_Capabilities.OpenGLVersion = QueryString(GL_VERSION);

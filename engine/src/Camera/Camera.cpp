@@ -2,8 +2,11 @@
 
 #include <cmath>
 #include <glm/ext/matrix_clip_space.hpp>
+#include <glm/geometric.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/matrix.hpp>
 #include <glm/trigonometric.hpp>
+#include <glm/vec4.hpp>
 #include <limits>
 
 namespace ProjectLight
@@ -116,5 +119,30 @@ namespace ProjectLight
 
         RecalculateProjectionMatrix();
         return true;
+    }
+
+    Ray Camera::CreateViewportRay(const glm::vec2& normalizedViewportPosition) const {
+        const glm::vec2 normalizedDeviceCoordinates{
+            normalizedViewportPosition.x * 2.0F - 1.0F,
+            1.0F - normalizedViewportPosition.y * 2.0F,
+        };
+
+        const glm::vec4 farClipPosition{
+            normalizedDeviceCoordinates.x,
+            normalizedDeviceCoordinates.y,
+            1.0F,
+            1.0F,
+        };
+
+        const glm::mat4 inverseViewProjection = glm::inverse(m_ProjectionMatrix * m_ViewMatrix);
+        glm::vec4 farWorldPosition = inverseViewProjection * farClipPosition;
+        farWorldPosition /= farWorldPosition.w;
+
+        const glm::vec3 direction = glm::normalize(glm::vec3{farWorldPosition} - m_Position);
+
+        return {
+            .Origin = m_Position,
+            .Direction = direction,
+        };
     }
 }

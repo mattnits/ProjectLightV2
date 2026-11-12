@@ -11,6 +11,7 @@ add_library(ProjectLightEngine STATIC
     src/Renderer/Shader.cpp
     src/Renderer/VertexBuffer.cpp
     src/Renderer/VertexArray.cpp
+    src/Math/Ray.cpp
 )
 
 target_include_directories(ProjectLightEngine

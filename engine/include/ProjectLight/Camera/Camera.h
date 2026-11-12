@@ -2,7 +2,10 @@
 
 #include <glm/gtc/quaternion.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+
+#include "ProjectLight/Math/Ray.h"
 
 namespace ProjectLight
 {
@@ -29,6 +32,7 @@ namespace ProjectLight
 
         [[nodiscard]] bool SetPerspective(float verticalFieldOfViewDegrees, float nearClip,
                                           float farClip);
+        [[nodiscard]] Ray CreateViewportRay(const glm::vec2& normalizedViewportPosition) const;
 
     private:
         void RecalculateViewMatrix();
