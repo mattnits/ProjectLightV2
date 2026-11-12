@@ -1,10 +1,13 @@
 #include "ProjectLight/Renderer/Renderer.h"
 
 #include <glad/glad.h>
+#include <limits>
 #include <stdexcept>
 
 #include "ProjectLight/Core/Log.h"
 #include "ProjectLight/Renderer/RendererDebug.h"
+#include "ProjectLight/Renderer/Shader.h"
+#include "ProjectLight/Renderer/VertexArray.h"
 
 namespace ProjectLight
 {
@@ -24,6 +27,30 @@ namespace ProjectLight
             GLint value{};
             glGetIntegerv(property, &value);
             return static_cast<int>(value);
+        }
+
+        GLenum ToOpenGLTopology(PrimitiveTopology topology) {
+            switch (topology) {
+            case PrimitiveTopology::Lines:
+                return GL_LINES;
+
+            case PrimitiveTopology::Triangles:
+                return GL_TRIANGLES;
+            }
+
+            throw std::invalid_argument("Unsupported primitive topology");
+        }
+
+        std::size_t GetVerticesPerPrimitive(PrimitiveTopology topology) {
+            switch (topology) {
+            case PrimitiveTopology::Lines:
+                return 2;
+
+            case PrimitiveTopology::Triangles:
+                return 3;
+            }
+
+            throw std::invalid_argument("Unsupported primitive topology");
         }
     }
 
@@ -55,4 +82,27 @@ namespace ProjectLight
     const RendererCapabilities& Renderer::GetCapabilities() const {
         return m_Capabilities;
     }
+
+    void Renderer::Draw(const Shader& shader, const VertexArray& vertexArray,
+                        PrimitiveTopology topology, std::size_t vertexCount) const {
+        if (vertexCount == 0) {
+            throw std::invalid_argument("Draw requires at least one vertex");
+        }
+        if (vertexCount > static_cast<std::size_t>(std::numeric_limits<GLsizei>::max())) {
+            throw std::length_error("Vertex count exceeds the OpenGL limit");
+        }
+
+        const std::size_t verticesPerPrimitive = GetVerticesPerPrimitive(topology);
+        if (vertexCount % verticesPerPrimitive != 0) {
+            throw std::invalid_argument("Vertex count does not form complete primitives");
+        }
+
+        const GLenum openGLTopology = ToOpenGLTopology(topology);
+
+        shader.Bind();
+        vertexArray.Bind();
+
+        glDrawArrays(openGLTopology, 0, static_cast<GLsizei>(vertexCount));
+    }
+
 }

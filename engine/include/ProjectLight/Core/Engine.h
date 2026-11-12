@@ -17,6 +17,7 @@ namespace ProjectLight
 
         Window& GetWindow();
         const Input& GetInput() const;
+        [[nodiscard]] const Renderer& GetRenderer() const;
 
     private:
         Log m_Log;

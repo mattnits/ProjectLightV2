@@ -5,6 +5,9 @@
 #include "ProjectLight/Editor/Camera/EditorCamera.h"
 #include "ProjectLight/Editor/Panels/InspectorPanel.h"
 #include "ProjectLight/Editor/Panels/ViewportPanel.h"
+#include "ProjectLight/Renderer/Shader.h"
+#include "ProjectLight/Renderer/VertexArray.h"
+#include "ProjectLight/Renderer/VertexBuffer.h"
 #include "ProjectLight/Scene/Components/TransformComponent.h"
 
 namespace ProjectLight
@@ -32,5 +35,9 @@ namespace ProjectLight
         InspectorPanel m_Inspector;
         ViewportPanel m_Viewport;
         EditorCamera m_EditorCamera;
+
+        Shader m_TestShader;
+        VertexBuffer m_TestVertexBuffer;
+        VertexArray m_TestVertexArray;
     };
 }

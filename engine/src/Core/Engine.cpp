@@ -60,4 +60,8 @@ namespace ProjectLight
     const Input& Engine::GetInput() const {
         return m_Input;
     }
+
+    const Renderer& Engine::GetRenderer() const {
+        return m_Renderer;
+    }
 }
