@@ -130,6 +130,9 @@ namespace ProjectLight
 
         m_GridRenderer.Render(m_Engine.GetRenderer(), viewProjectionMatrix,
                               m_EditorCamera.GetPivot(), gridScaleDistance);
+
+        m_DebugLineRenderer.Flush(m_Engine.GetRenderer(), viewProjectionMatrix);
+
         m_Viewport.EndRender();
 
         ImGui::Render();
