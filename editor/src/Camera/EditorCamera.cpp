@@ -9,12 +9,13 @@ namespace ProjectLight
 {
     namespace
     {
-        constexpr float MinimumPivotDistance = 0.1F;
+        constexpr float MinimumPivotDistance = 0.5F;
         constexpr float MaximumPivotDistance = 1000.0F;
         constexpr float MinimumMovementSpeed = 0.5F;
         constexpr float MaximumMovementSpeed = 50.0F;
         constexpr float MinimumPitchDegrees = -89.0F;
         constexpr float MaximumPitchDegrees = 89.0F;
+        constexpr double ScrollClampSize = 20.0;
 
         bool IsFinite(const glm::vec3& value) {
             return std::isfinite(value.x) && std::isfinite(value.y) && std::isfinite(value.z);
@@ -28,6 +29,10 @@ namespace ProjectLight
                 glm::angleAxis(glm::radians(pitchDegrees), glm::vec3{1.0F, 0.0F, 0.0F});
 
             return yawRotation * pitchRotation;
+        }
+
+        float NavigationDistance(const Camera& camera) {
+            return std::max(std::abs(camera.GetPosition().y), 1.0F);
         }
     }
 
@@ -68,17 +73,15 @@ namespace ProjectLight
     // Moves both camera and pivot
     void EditorCamera::Pan(const glm::dvec2& mouseDelta) {
         const glm::quat& orientation = m_Camera.GetOrientation();
-
         const glm::vec3 right = orientation * glm::vec3{1.0F, 0.0F, 0.0F};
-
         const glm::vec3 up = orientation * glm::vec3{0.0F, 1.0F, 0.0F};
+        const float panScale = std::clamp(NavigationDistance(m_Camera) / 10.0F, 0.1F, 20.0F);
 
         const glm::vec3 translation =
             (-right * static_cast<float>(mouseDelta.x) + up * static_cast<float>(mouseDelta.y)) *
-            m_PanSensitivity;
+            m_PanSensitivity * panScale;
 
         m_Camera.SetPosition(m_Camera.GetPosition() + translation);
-
         m_Pivot += translation;
     }
 
@@ -92,16 +95,41 @@ namespace ProjectLight
     }
 
     void EditorCamera::Zoom(double scrollDelta) {
-        if (scrollDelta == 0.0) {
+        Zoom(scrollDelta, m_Pivot);
+    }
+
+    void EditorCamera::Zoom(double scrollDelta, const glm::vec3& target) {
+        if (scrollDelta == 0.0 || !std::isfinite(scrollDelta) || !IsFinite(target)) {
             return;
         }
 
-        const float zoomAmount =
-            static_cast<float>(scrollDelta) * m_ZoomSensitivity * m_PivotDistance;
+        const float requestedScale =
+            std::pow(1.0F - m_ZoomSensitivity, static_cast<float>(scrollDelta));
+        const float newDistance = std::clamp(m_PivotDistance * requestedScale, MinimumPivotDistance,
+                                             MaximumPivotDistance);
+        const float appliedScale = newDistance / m_PivotDistance;
 
-        m_PivotDistance =
-            std::clamp(m_PivotDistance - zoomAmount, MinimumPivotDistance, MaximumPivotDistance);
+        m_Pivot = target + (m_Pivot - target) * appliedScale;
+        m_PivotDistance = newDistance;
+
         m_Camera.SetPosition(m_Pivot - GetForwardDirection() * m_PivotDistance);
+    }
+
+    void EditorCamera::Dolly(double scrollDelta, const glm::vec3& direction) {
+        const float lengthSquared = glm::dot(direction, direction);
+        if (!std::isfinite(scrollDelta) || !IsFinite(direction) || !std::isfinite(lengthSquared) ||
+            lengthSquared <= 0.0F) {
+            return;
+        }
+
+        const float stepPerScroll =
+            std::clamp(NavigationDistance(m_Camera) * m_ZoomSensitivity, 0.05F, 50.0F);
+        const float scrollAmount =
+            static_cast<float>(std::clamp(scrollDelta, -ScrollClampSize, ScrollClampSize));
+        const glm::vec3 movement = glm::normalize(direction) * (stepPerScroll * scrollAmount);
+
+        m_Camera.SetPosition(m_Camera.GetPosition() + movement);
+        m_Pivot += movement;
     }
 
     bool EditorCamera::Focus(const glm::vec3& target, float distance) {

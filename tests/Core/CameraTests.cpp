@@ -1,5 +1,6 @@
 #include <ProjectLight/Camera/Camera.h>
 #include <glm/ext/matrix_clip_space.hpp>
+#include <glm/geometric.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/trigonometric.hpp>
@@ -12,6 +13,7 @@ namespace ProjectLight
     {
         constexpr float MatrixTolerance = 0.00001F;
         constexpr float ProjectionTolerance = 0.0001F;
+        constexpr float RayTolerance = 0.0001F;
 
         void ExpectMatrixNear(const glm::mat4& actual, const glm::mat4& expected,
                               float tolerance = MatrixTolerance) {
@@ -20,6 +22,13 @@ namespace ProjectLight
                     EXPECT_NEAR(actual[column][row], expected[column][row], tolerance);
                 }
             }
+        }
+
+        void ExpectVectorNear(const glm::vec3& actual, const glm::vec3& expected,
+                              float tolerance = RayTolerance) {
+            EXPECT_NEAR(actual.x, expected.x, tolerance);
+            EXPECT_NEAR(actual.y, expected.y, tolerance);
+            EXPECT_NEAR(actual.z, expected.z, tolerance);
         }
 
         float ProjectDepth(const glm::mat4& projection, float viewSpaceDepth) {
@@ -153,5 +162,43 @@ namespace ProjectLight
 
         EXPECT_FLOAT_EQ(camera.GetAspectRatio(), originalAspectRatio);
         ExpectMatrixNear(camera.GetProjectionMatrix(), originalProjection);
+    }
+
+    TEST(CameraTests, CenterViewportRayStartsAtCameraAndPointsForward) {
+        Camera camera;
+        camera.SetPosition(glm::vec3{2.0F, 3.0F, 4.0F});
+
+        const Ray ray = camera.CreateViewportRay(glm::vec2{0.5F, 0.5F});
+
+        ExpectVectorNear(ray.Origin, camera.GetPosition());
+        ExpectVectorNear(ray.Direction, glm::vec3{0.0F, 0.0F, -1.0F});
+        EXPECT_NEAR(glm::length(ray.Direction), 1.0F, RayTolerance);
+    }
+
+    TEST(CameraTests, ViewportRayUsesCameraOrientation) {
+        Camera camera;
+        const glm::quat orientation =
+            glm::angleAxis(glm::radians(90.0F), glm::vec3{0.0F, 1.0F, 0.0F});
+        ASSERT_TRUE(camera.SetOrientation(orientation));
+
+        const Ray ray = camera.CreateViewportRay(glm::vec2{0.5F, 0.5F});
+        const glm::vec3 expectedDirection = orientation * glm::vec3{0.0F, 0.0F, -1.0F};
+
+        ExpectVectorNear(ray.Direction, expectedDirection);
+    }
+
+    TEST(CameraTests, ViewportRayConvertsTopLeftImGuiCoordinatesToOpenGLDirection) {
+        const Camera camera;
+
+        const Ray topLeftRay = camera.CreateViewportRay(glm::vec2{0.0F, 0.0F});
+        const Ray bottomRightRay = camera.CreateViewportRay(glm::vec2{1.0F, 1.0F});
+
+        EXPECT_LT(topLeftRay.Direction.x, 0.0F);
+        EXPECT_GT(topLeftRay.Direction.y, 0.0F);
+        EXPECT_LT(topLeftRay.Direction.z, 0.0F);
+
+        EXPECT_GT(bottomRightRay.Direction.x, 0.0F);
+        EXPECT_LT(bottomRightRay.Direction.y, 0.0F);
+        EXPECT_LT(bottomRightRay.Direction.z, 0.0F);
     }
 }

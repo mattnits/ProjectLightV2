@@ -3,6 +3,8 @@
 #include <glm/vec4.hpp>
 #include <imgui.h>
 
+#include "ProjectLight/Editor/Widgets/CameraOrientationWidget.h"
+
 namespace ProjectLight
 {
     namespace
@@ -14,10 +16,11 @@ namespace ProjectLight
           m_ContentSize{InitialFramebufferSpecification.Width,
                         InitialFramebufferSpecification.Height} {}
 
-    void ViewportPanel::OnImGuiRender() {
+    void ViewportPanel::OnImGuiRender(const glm::quat& cameraOrientation) {
         const bool isVisible = ImGui::Begin("Viewport");
         m_IsFocused = isVisible && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
         m_IsHovered = false;
+        m_NormalizedMousePosition.reset();
 
         if (isVisible) {
             const ImVec2 availableSize = ImGui::GetContentRegionAvail();
@@ -40,6 +43,25 @@ namespace ProjectLight
                 ImGui::Image(ImTextureRef{textureID}, availableSize, ImVec2{0.0F, 1.0F},
                              ImVec2{1.0F, 0.0F});
                 m_IsHovered = ImGui::IsItemHovered();
+
+                const ImVec2 imageMinimum = ImGui::GetItemRectMin();
+                const ImVec2 imageMaximum = ImGui::GetItemRectMax();
+
+                DrawCameraOrientationWidget(*ImGui::GetWindowDrawList(), imageMinimum, imageMaximum,
+                                            cameraOrientation);
+
+                if (m_IsHovered) {
+                    const ImVec2 mousePosition = ImGui::GetMousePos();
+                    const float imageWidth = imageMaximum.x - imageMinimum.x;
+                    const float imageHeight = imageMaximum.y - imageMinimum.y;
+
+                    if (imageWidth > 0.0F && imageHeight > 0.0F) {
+                        m_NormalizedMousePosition = {
+                            (mousePosition.x - imageMinimum.x) / imageWidth,
+                            (mousePosition.y - imageMinimum.y) / imageHeight,
+                        };
+                    }
+                }
             }
         }
 
@@ -65,5 +87,9 @@ namespace ProjectLight
 
     bool ViewportPanel::IsHovered() const {
         return m_IsHovered;
+    }
+
+    std::optional<glm::vec2> ViewportPanel::GetNormalizedMousePosition() const {
+        return m_NormalizedMousePosition;
     }
 }

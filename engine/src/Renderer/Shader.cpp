@@ -145,11 +145,28 @@ namespace ProjectLight
 
     void Shader::SetMatrix4(std::string_view name, const glm::mat4& value) const {
         const int location = GetUniformLocation(name);
-
         if (location == -1) {
             return;
         }
 
         glProgramUniformMatrix4fv(m_ProgramID, location, 1, GL_FALSE, glm::value_ptr(value));
+    }
+
+    void Shader::SetFloat(std::string_view name, float value) const {
+        const int location = GetUniformLocation(name);
+        if (location == -1) {
+            return;
+        }
+
+        glProgramUniform1f(m_ProgramID, location, value);
+    }
+
+    void Shader::SetVector2(std::string_view name, const glm::vec2& value) const {
+        const int location = GetUniformLocation(name);
+        if (location == -1) {
+            return;
+        }
+
+        glProgramUniform2f(m_ProgramID, location, value.x, value.y);
     }
 }

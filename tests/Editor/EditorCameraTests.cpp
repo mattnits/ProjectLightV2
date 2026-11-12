@@ -127,12 +127,29 @@ namespace ProjectLight
             editorCamera.GetCamera().GetPosition() - originalPosition;
         const glm::vec3 pivotTranslation = editorCamera.GetPivot() - originalPivot;
 
-        EXPECT_LT(cameraTranslation.x, 0.0F);
-        EXPECT_GT(cameraTranslation.y, 0.0F);
-        EXPECT_NEAR(cameraTranslation.z, 0.0F, VectorTolerance);
-        EXPECT_NEAR(cameraTranslation.x, -2.0F * cameraTranslation.y, VectorTolerance);
+        ExpectVectorNear(cameraTranslation, glm::vec3{-0.5F, 0.25F, 0.0F});
         ExpectVectorNear(pivotTranslation, cameraTranslation);
         ExpectPivotRelationship(editorCamera);
+    }
+
+    TEST(EditorCameraTests, PanSpeedIncreasesWithHeightAboveGrid) {
+        EditorCamera nearCamera;
+        EditorCamera farCamera;
+        ASSERT_TRUE(nearCamera.Focus(glm::vec3{0.0F, 1.0F, -10.0F}));
+        ASSERT_TRUE(farCamera.Focus(glm::vec3{0.0F, 100.0F, -10.0F}));
+
+        const glm::vec3 nearStart = nearCamera.GetCamera().GetPosition();
+        const glm::vec3 farStart = farCamera.GetCamera().GetPosition();
+
+        nearCamera.Pan(glm::dvec2{100.0, 0.0});
+        farCamera.Pan(glm::dvec2{100.0, 0.0});
+
+        ExpectVectorNear(nearCamera.GetCamera().GetPosition() - nearStart,
+                         glm::vec3{-0.5F, 0.0F, 0.0F});
+        ExpectVectorNear(farCamera.GetCamera().GetPosition() - farStart,
+                         glm::vec3{-50.0F, 0.0F, 0.0F});
+        ExpectPivotRelationship(nearCamera);
+        ExpectPivotRelationship(farCamera);
     }
 
     TEST(EditorCameraTests, OrbitKeepsPivotAndDistanceFixed) {
@@ -157,12 +174,67 @@ namespace ProjectLight
         ExpectPivotRelationship(editorCamera);
 
         editorCamera.Zoom(1000000.0);
-        EXPECT_FLOAT_EQ(editorCamera.GetPivotDistance(), 0.1F);
+        EXPECT_FLOAT_EQ(editorCamera.GetPivotDistance(), 0.5F);
         ExpectPivotRelationship(editorCamera);
 
         editorCamera.Zoom(-1000000.0);
         EXPECT_FLOAT_EQ(editorCamera.GetPivotDistance(), 1000.0F);
         ExpectPivotRelationship(editorCamera);
+    }
+
+    TEST(EditorCameraTests, TargetedZoomMovesCameraAndPivotTowardTargetProportionally) {
+        EditorCamera editorCamera;
+        const glm::vec3 target{5.0F, 2.0F, -20.0F};
+        const glm::vec3 originalPosition = editorCamera.GetCamera().GetPosition();
+        const glm::vec3 originalPivot = editorCamera.GetPivot();
+
+        editorCamera.Zoom(1.0, target);
+
+        constexpr float expectedScale = 0.9F;
+        const glm::vec3 expectedPosition = target + (originalPosition - target) * expectedScale;
+        const glm::vec3 expectedPivot = target + (originalPivot - target) * expectedScale;
+
+        ExpectVectorNear(editorCamera.GetCamera().GetPosition(), expectedPosition);
+        ExpectVectorNear(editorCamera.GetPivot(), expectedPivot);
+        EXPECT_NEAR(editorCamera.GetPivotDistance(), 9.0F, VectorTolerance);
+        ExpectPivotRelationship(editorCamera);
+    }
+
+    TEST(EditorCameraTests, TargetedZoomRejectsInvalidInput) {
+        EditorCamera editorCamera;
+        const EditorCameraState originalState = editorCamera.GetState();
+        const glm::vec3 originalPosition = editorCamera.GetCamera().GetPosition();
+        const float nan = std::numeric_limits<float>::quiet_NaN();
+
+        editorCamera.Zoom(std::numeric_limits<double>::infinity(), glm::vec3{0.0F});
+        editorCamera.Zoom(1.0, glm::vec3{nan, 0.0F, 0.0F});
+
+        ExpectStateNear(editorCamera.GetState(), originalState);
+        ExpectVectorNear(editorCamera.GetCamera().GetPosition(), originalPosition);
+    }
+
+    TEST(EditorCameraTests, DollySpeedIncreasesWithHeightAndPreservesPivotDistance) {
+        EditorCamera nearCamera;
+        EditorCamera farCamera;
+        ASSERT_TRUE(nearCamera.Focus(glm::vec3{0.0F, 1.0F, -10.0F}));
+        ASSERT_TRUE(farCamera.Focus(glm::vec3{0.0F, 100.0F, -10.0F}));
+
+        const glm::vec3 nearStart = nearCamera.GetCamera().GetPosition();
+        const glm::vec3 farStart = farCamera.GetCamera().GetPosition();
+        const glm::vec3 nearPivot = nearCamera.GetPivot();
+        const glm::vec3 farPivot = farCamera.GetPivot();
+
+        nearCamera.Dolly(1.0, glm::vec3{0.0F, 0.0F, -2.0F});
+        farCamera.Dolly(1.0, glm::vec3{0.0F, 0.0F, -2.0F});
+
+        ExpectVectorNear(nearCamera.GetCamera().GetPosition() - nearStart,
+                         glm::vec3{0.0F, 0.0F, -0.1F});
+        ExpectVectorNear(farCamera.GetCamera().GetPosition() - farStart,
+                         glm::vec3{0.0F, 0.0F, -10.0F});
+        ExpectVectorNear(nearCamera.GetPivot() - nearPivot, glm::vec3{0.0F, 0.0F, -0.1F});
+        ExpectVectorNear(farCamera.GetPivot() - farPivot, glm::vec3{0.0F, 0.0F, -10.0F});
+        EXPECT_FLOAT_EQ(nearCamera.GetPivotDistance(), 10.0F);
+        EXPECT_FLOAT_EQ(farCamera.GetPivotDistance(), 10.0F);
     }
 
     TEST(EditorCameraTests, MovementSpeedAdjustmentRespectsBounds) {
