@@ -1,0 +1,32 @@
+To build do:
+    cmake --preset windows-debug  
+    cmake --build --preset windows-debug  
+
+Run Sandbox:
+    cmake --build --preset windows-debug  
+    .\build\windows-debug\sandbox\ProjectLightSandbox.exe
+Run Editor:
+    cmake --build --preset windows-debug  
+    .\build\windows-debug\editor\ProjectLightEditor.exe  
+
+To run tests:
+    cmake --preset windows-debug
+    cmake --build --preset windows-debug
+    ctest --test-dir build/windows-debug --output-on-failure
+
+To run memory checking:
+    cmake --preset windows-asan
+    cmake --build --preset windows-asan
+    .\build\windows-asan\editor\ProjectLightEditor.exe
+
+To check clang formatting:
+    clang-format --dry-run --Werror .\editor\src\Panels\InspectorPanel.cpp
+To fix clang formatting:
+    clang-format -i .\editor\src\Panels\InspectorPanel.cpp
+To Fix all clang files formatting:
+    Get-ChildItem -Path .\engine,.\editor,.\sandbox,.\tests -Recurse -File -Include *.cpp,*.h |
+    ForEach-Object { clang-format -i $_.FullName }
+
+    or 
+    
+    .\scripts\format.ps1

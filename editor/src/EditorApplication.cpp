@@ -1,15 +1,12 @@
 #include "ProjectLight/Editor/EditorApplication.h"
 
 #include <GLFW/glfw3.h>
-#include <array>
-#include <cstddef>
 #include <filesystem>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
-#include <span>
 #include <system_error>
 
 #include "ProjectLight/Core/Engine.h"
@@ -22,72 +19,9 @@ namespace ProjectLight
     namespace
     {
         const std::filesystem::path EditorCameraStatePath{"editor_camera.ini"};
-
-        struct TriangleVertex
-        {
-            glm::vec3 Position;
-            glm::vec3 Color;
-        };
-
-        const std::array<TriangleVertex, 3> TriangleVertices{
-            TriangleVertex{
-                .Position = {-1.0F, -1.0F, -5.0F},
-                .Color = {1.0F, 0.0F, 0.0F},
-            },
-            TriangleVertex{
-                .Position = {1.0F, -1.0F, -5.0F},
-                .Color = {0.0F, 1.0F, 0.0F},
-            },
-            TriangleVertex{
-                .Position = {0.0F, 1.0F, -5.0F},
-                .Color = {0.0F, 0.0F, 1.0F},
-            },
-        };
-
-        constexpr char TriangleVertexShaderSource[] = R"(#version 460 core
-
-            layout(location = 0) in vec3 a_Position;
-            layout(location = 1) in vec3 a_Color;
-
-            layout(location = 0) out vec3 v_Color;
-
-            uniform mat4 u_ViewProjection;
-
-            void main() {
-                v_Color = a_Color;
-                gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
-            }
-            )";
-
-        constexpr char TriangleFragmentShaderSource[] = R"(#version 460 core
-
-            layout(location = 0) in vec3 v_Color;
-            layout(location = 0) out vec4 o_Color;
-
-            void main() {
-                o_Color = vec4(v_Color, 1.0);
-            }
-            )";
     }
 
-    EditorApplication::EditorApplication(Engine& engine)
-        : m_Engine(engine), m_TestShader(TriangleVertexShaderSource, TriangleFragmentShaderSource),
-          m_TestVertexBuffer(std::as_bytes(std::span{TriangleVertices})) {
-        const std::array<VertexAttribute, 2> attributes{
-            VertexAttribute{
-                .Location = 0,
-                .ComponentCount = 3,
-                .Offset = offsetof(TriangleVertex, Position),
-            },
-            VertexAttribute{
-                .Location = 1,
-                .ComponentCount = 3,
-                .Offset = offsetof(TriangleVertex, Color),
-            },
-        };
-
-        m_TestVertexArray.SetVertexBuffer(m_TestVertexBuffer, sizeof(TriangleVertex), attributes);
-    }
+    EditorApplication::EditorApplication(Engine& engine) : m_Engine(engine) {}
 
     void EditorApplication::OnStart() {
         IMGUI_CHECKVERSION();
@@ -183,11 +117,7 @@ namespace ProjectLight
         const glm::mat4 viewProjectionMatrix =
             camera.GetProjectionMatrix() * camera.GetViewMatrix();
 
-        m_TestShader.SetMatrix4("u_ViewProjection", viewProjectionMatrix);
-
-        m_Engine.GetRenderer().Draw(m_TestShader, m_TestVertexArray, PrimitiveTopology::Triangles,
-                                    TriangleVertices.size());
-
+        m_GridRenderer.Render(m_Engine.GetRenderer(), viewProjectionMatrix);
         m_Viewport.EndRender();
 
         ImGui::Render();

@@ -49,7 +49,7 @@ namespace ProjectLight
         float m_MovementSpeed = 5.0F;
         glm::vec3 m_Pivot{0.0F, 0.0F, -10.0F};
         float m_PivotDistance = 10.0F;
-        float m_PanSensitivity = 0.01F;
+        float m_PanSensitivity = 0.05F;
         float m_ZoomSensitivity = 0.1F;
     };
 }
