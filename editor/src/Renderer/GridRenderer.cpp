@@ -1,7 +1,6 @@
 #include "ProjectLight/Editor/Renderer/GridRenderer.h"
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <cstddef>
 #include <filesystem>
@@ -10,6 +9,7 @@
 #include <vector>
 
 #include "ProjectLight/Renderer/Renderer.h"
+#include "ProjectLight/Renderer/VertexLayout.h"
 
 namespace ProjectLight
 {
@@ -132,31 +132,35 @@ namespace ProjectLight
         const std::vector<GridVertex> InitialGridVertices =
             CreateGridVertices(glm::vec2{0.0F}, InitialGridSpacing);
 
-        std::filesystem::path gridVertexShaderPath =
+        const std::filesystem::path GridVertexShaderPath =
             std::filesystem::path{PROJECTLIGHT_EDITOR_SHADER_DIR} / "Grid.vert";
 
-        std::filesystem::path gridFragmentShaderPath =
+        const std::filesystem::path GridFragmentShaderPath =
             std::filesystem::path{PROJECTLIGHT_EDITOR_SHADER_DIR} / "Grid.frag";
     }
 
     GridRenderer::GridRenderer()
-        : m_Shader(Shader::FromFiles(gridVertexShaderPath, gridFragmentShaderPath)),
+        : m_Shader(Shader::FromFiles(GridVertexShaderPath, GridFragmentShaderPath)),
           m_VertexBuffer(std::as_bytes(std::span{InitialGridVertices}), BufferUsage::Dynamic),
           m_VertexCount(InitialGridVertices.size()) {
-        const std::array<VertexAttribute, 2> attributes{
-            VertexAttribute{
-                .Location = 0,
-                .ComponentCount = 3,
-                .Offset = offsetof(GridVertex, Position),
-            },
-            VertexAttribute{
-                .Location = 1,
-                .ComponentCount = 3,
-                .Offset = offsetof(GridVertex, Color),
-            },
+        const VertexLayout layout{
+            .Stride = sizeof(GridVertex),
+            .Attributes =
+                {
+                    VertexAttribute{
+                        .Location = 0,
+                        .ComponentCount = 3,
+                        .Offset = offsetof(GridVertex, Position),
+                    },
+                    VertexAttribute{
+                        .Location = 1,
+                        .ComponentCount = 3,
+                        .Offset = offsetof(GridVertex, Color),
+                    },
+                },
         };
 
-        m_VertexArray.SetVertexBuffer(m_VertexBuffer, sizeof(GridVertex), attributes);
+        m_VertexArray.SetVertexBuffer(m_VertexBuffer, layout);
     }
 
     void GridRenderer::Render(const Renderer& renderer, const glm::mat4& viewProjectionMatrix,

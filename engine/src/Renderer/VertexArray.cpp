@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "ProjectLight/Core/Log.h"
+#include "ProjectLight/Renderer/IndexBuffer.h"
 #include "ProjectLight/Renderer/VertexBuffer.h"
 
 namespace ProjectLight
@@ -32,8 +33,10 @@ namespace ProjectLight
         glBindVertexArray(0);
     }
 
-    void VertexArray::SetVertexBuffer(const VertexBuffer& vertexBuffer, std::size_t stride,
-                                      std::span<const VertexAttribute> attributes) {
+    void VertexArray::SetVertexBuffer(const VertexBuffer& vertexBuffer,
+                                      const VertexLayout& layout) {
+        const std::size_t stride = layout.Stride;
+        const std::vector<VertexAttribute>& attributes = layout.Attributes;
         if (stride == 0) {
             throw std::invalid_argument("Vertex stride must be positive");
         }
@@ -81,5 +84,9 @@ namespace ProjectLight
                                       GL_FLOAT, GL_FALSE, static_cast<GLuint>(attribute.Offset));
             glVertexArrayAttribBinding(m_RendererID, attribute.Location, bindingIndex);
         }
+    }
+
+    void VertexArray::SetIndexBuffer(const IndexBuffer& indexBuffer) {
+        glVertexArrayElementBuffer(m_RendererID, indexBuffer.m_RendererID);
     }
 }

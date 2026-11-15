@@ -2,11 +2,13 @@
 
 #include <array>
 #include <cstddef>
+#include <filesystem>
 #include <glm/vec3.hpp>
 #include <span>
 #include <vector>
 
 #include "ProjectLight/Renderer/Renderer.h"
+#include "ProjectLight/Renderer/VertexLayout.h"
 
 namespace ProjectLight
 {
@@ -18,46 +20,40 @@ namespace ProjectLight
             glm::vec3 Color;
         };
 
-        constexpr char VertexShaderSource[] = R"(#version 460 core
-            layout(location = 0) in vec3 a_Position;
-            layout(location = 1) in vec3 a_Color;
-
-            out vec3 v_Color;
-            uniform mat4 u_ViewProjection;
-
-            void main() {
-                v_Color = a_Color;
-                gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
-            }
-        )";
-
-        constexpr char FragmentShaderSource[] = R"(#version 460 core
-            in vec3 v_Color;
-            layout(location = 0) out vec4 o_Color;
-
-            void main() {
-                o_Color = vec4(v_Color, 1.0);
-            }
-        )";
-
         const std::array<DebugLineVertex, 2> InitialVertices{
             DebugLineVertex{.Position = glm::vec3{0.0F}, .Color = glm::vec3{1.0F}},
             DebugLineVertex{.Position = glm::vec3{0.0F}, .Color = glm::vec3{1.0F}},
         };
 
+        const std::filesystem::path DebugLineVertexShaderPath =
+            std::filesystem::path{PROJECTLIGHT_ENGINE_SHADER_DIR} / "DebugLine.vert";
+
+        const std::filesystem::path DebugLineFragmentShaderPath =
+            std::filesystem::path{PROJECTLIGHT_ENGINE_SHADER_DIR} / "DebugLine.frag";
+
     }
 
     DebugLineRenderer::DebugLineRenderer()
-        : m_Shader(VertexShaderSource, FragmentShaderSource),
+        : m_Shader(Shader::FromFiles(DebugLineVertexShaderPath, DebugLineFragmentShaderPath)),
           m_VertexBuffer(std::as_bytes(std::span{InitialVertices}), BufferUsage::Dynamic) {
-        const std::array<VertexAttribute, 2> attributes{
-            VertexAttribute{
-                .Location = 0, .ComponentCount = 3, .Offset = offsetof(DebugLineVertex, Position)},
-            VertexAttribute{
-                .Location = 1, .ComponentCount = 3, .Offset = offsetof(DebugLineVertex, Color)},
+        const VertexLayout layout{
+            .Stride = sizeof(DebugLineVertex),
+            .Attributes =
+                {
+                    VertexAttribute{
+                        .Location = 0,
+                        .ComponentCount = 3,
+                        .Offset = offsetof(DebugLineVertex, Position),
+                    },
+                    VertexAttribute{
+                        .Location = 1,
+                        .ComponentCount = 3,
+                        .Offset = offsetof(DebugLineVertex, Color),
+                    },
+                },
         };
 
-        m_VertexArray.SetVertexBuffer(m_VertexBuffer, sizeof(DebugLineVertex), attributes);
+        m_VertexArray.SetVertexBuffer(m_VertexBuffer, layout);
     }
 
     void DebugLineRenderer::AddLine(const DebugLine& line) {

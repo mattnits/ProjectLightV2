@@ -5,6 +5,7 @@
 
 namespace ProjectLight
 {
+    class IndexBuffer;
     class Shader;
     class VertexArray;
 
@@ -33,6 +34,8 @@ namespace ProjectLight
         [[nodiscard]] const RendererCapabilities& GetCapabilities() const;
         void Draw(const Shader& shader, const VertexArray& vertexArray, PrimitiveTopology topology,
                   std::size_t vertexCount) const;
+        void DrawIndexed(const Shader& shader, const VertexArray& vertexArray,
+                         const IndexBuffer& indexBuffer, PrimitiveTopology topology) const;
 
     private:
         RendererCapabilities m_Capabilities;

@@ -1,20 +1,13 @@
 #pragma once
 
-#include <cstddef>
 #include <cstdint>
-#include <span>
+
+#include "ProjectLight/Renderer/VertexLayout.h"
 
 namespace ProjectLight
 {
+    class IndexBuffer;
     class VertexBuffer;
-
-    struct VertexAttribute
-    {
-        std::uint32_t Location{};
-        int ComponentCount{};
-        std::size_t Offset{};
-    };
-
     class VertexArray
     {
     public:
@@ -28,8 +21,8 @@ namespace ProjectLight
 
         void Bind() const;
         static void Unbind();
-        void SetVertexBuffer(const VertexBuffer& vertexBuffer, std::size_t stride,
-                             std::span<const VertexAttribute> attributes);
+        void SetVertexBuffer(const VertexBuffer& vertexBuffer, const VertexLayout& layout);
+        void SetIndexBuffer(const IndexBuffer& indexBuffer);
 
     private:
         std::uint32_t m_RendererID{};
