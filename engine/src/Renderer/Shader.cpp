@@ -1,7 +1,9 @@
 #include "ProjectLight/Renderer/Shader.h"
 
+#include <fstream>
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <iterator>
 #include <stdexcept>
 #include <string>
 
@@ -89,6 +91,25 @@ namespace ProjectLight
             Log::Error("Shader program linking failed:\n{}", errorMessage);
             throw std::runtime_error("Shader program linking failed");
         }
+
+        std::string ReadShaderFile(const std::filesystem::path& path) {
+            std::ifstream file{path, std::ios::binary};
+            if (!file) {
+                throw std::runtime_error("Could not open shader file: " + path.string());
+            }
+
+            std::string source{std::istreambuf_iterator<char>{file},
+                               std::istreambuf_iterator<char>{}};
+
+            if (file.bad()) {
+                throw std::runtime_error("Could not read shader file: " + path.string());
+            }
+            if (source.empty()) {
+                throw std::runtime_error("Shader file is empty: " + path.string());
+            }
+
+            return source;
+        }
     }
 
     Shader::Shader(std::string_view vertexSource, std::string_view fragmentSource) {
@@ -121,6 +142,14 @@ namespace ProjectLight
         if (m_ProgramID != 0) {
             glDeleteProgram(m_ProgramID);
         }
+    }
+
+    Shader Shader::FromFiles(const std::filesystem::path& vertexPath,
+                             const std::filesystem::path& fragmentPath) {
+        const std::string vertexSource = ReadShaderFile(vertexPath);
+        const std::string fragmentSource = ReadShaderFile(fragmentPath);
+
+        return Shader{vertexSource, fragmentSource};
     }
 
     void Shader::Bind() const {
@@ -169,4 +198,5 @@ namespace ProjectLight
 
         glProgramUniform2f(m_ProgramID, location, value.x, value.y);
     }
+
 }

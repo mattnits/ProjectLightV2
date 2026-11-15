@@ -7,6 +7,7 @@ add_executable(ProjectLightTests
     Core/FrameTimerTests.cpp
     Core/InputTests.cpp
     Core/RayTests.cpp
+    Core/ShaderFileTests.cpp
     Core/TimestepTests.cpp
     Editor/EditorCameraTests.cpp
     Editor/EditorCameraPersistenceTests.cpp

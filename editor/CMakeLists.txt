@@ -19,3 +19,7 @@ target_link_libraries(ProjectLightEditor
         ProjectLightEngine
         imgui
 )
+
+target_compile_definitions(ProjectLightEditor PRIVATE
+    PROJECTLIGHT_EDITOR_SHADER_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders\"
+)

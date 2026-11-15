@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <filesystem>
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <string_view>
@@ -24,6 +25,9 @@ namespace ProjectLight
         Shader& operator=(const Shader&) = delete;
         Shader(Shader&&) = delete;
         Shader& operator=(Shader&&) = delete;
+
+        [[nodiscard]] static Shader FromFiles(const std::filesystem::path& vertexPath,
+                                              const std::filesystem::path& fragmentPath);
 
     private:
         std::uint32_t m_ProgramID{};
