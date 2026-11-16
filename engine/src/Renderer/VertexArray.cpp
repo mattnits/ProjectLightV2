@@ -1,5 +1,6 @@
 #include "ProjectLight/Renderer/VertexArray.h"
 
+#include <cstddef>
 #include <glad/glad.h>
 #include <stdexcept>
 
@@ -57,7 +58,8 @@ namespace ProjectLight
         GLint maximumAttributeCount{};
         glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maximumAttributeCount);
 
-        for (const VertexAttribute& attribute : attributes) {
+        for (std::size_t index = 0; index < attributes.size(); ++index) {
+            const VertexAttribute& attribute = attributes[index];
             if (attribute.Location >= static_cast<std::uint32_t>(maximumAttributeCount)) {
                 throw std::out_of_range("Vertex attribute location exceeds the OpenGL limit");
             }
@@ -68,9 +70,13 @@ namespace ProjectLight
 
             const std::size_t attributeSize =
                 static_cast<std::size_t>(attribute.ComponentCount) * sizeof(GLfloat);
-
             if (attributeSize > stride || attribute.Offset > stride - attributeSize) {
                 throw std::invalid_argument("Vertex attribute extends beyond the vertex stride");
+            }
+            for (std::size_t previousIndex = 0; previousIndex < index; ++previousIndex) {
+                if (attributes[previousIndex].Location == attribute.Location) {
+                    throw std::invalid_argument("Vertex attribute locations must be unique");
+                }
             }
         }
 
@@ -88,5 +94,10 @@ namespace ProjectLight
 
     void VertexArray::SetIndexBuffer(const IndexBuffer& indexBuffer) {
         glVertexArrayElementBuffer(m_RendererID, indexBuffer.m_RendererID);
+        m_IndexCount = indexBuffer.GetCount();
+    }
+
+    std::size_t VertexArray::GetIndexCount() const {
+        return m_IndexCount;
     }
 }

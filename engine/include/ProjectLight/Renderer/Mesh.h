@@ -18,7 +18,6 @@ namespace ProjectLight
         Mesh& operator=(Mesh&&) = delete;
 
         [[nodiscard]] const VertexArray& GetVertexArray() const;
-        [[nodiscard]] const IndexBuffer& GetIndexBuffer() const;
 
     private:
         VertexBuffer m_VertexBuffer;

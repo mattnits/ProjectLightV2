@@ -153,17 +153,26 @@ namespace ProjectLight
                      std::invalid_argument);
         EXPECT_THROW(static_cast<void>(PrimitiveGeometry::CreatePlane(1.0F, -1.0F)),
                      std::invalid_argument);
+        EXPECT_THROW(static_cast<void>(PrimitiveGeometry::CreatePlane(
+                         std::numeric_limits<float>::quiet_NaN(), 1.0F)),
+                     std::invalid_argument);
         EXPECT_THROW(static_cast<void>(PrimitiveGeometry::CreateCone(0.0F, 1.0F, 8)),
                      std::invalid_argument);
         EXPECT_THROW(static_cast<void>(PrimitiveGeometry::CreateCone(1.0F, 0.0F, 8)),
                      std::invalid_argument);
         EXPECT_THROW(static_cast<void>(PrimitiveGeometry::CreateCone(1.0F, 1.0F, 2)),
                      std::invalid_argument);
+        EXPECT_THROW(static_cast<void>(PrimitiveGeometry::CreateCone(
+                         1.0F, std::numeric_limits<float>::infinity(), 8)),
+                     std::invalid_argument);
         EXPECT_THROW(static_cast<void>(PrimitiveGeometry::CreateSphere(0.0F, 8, 12)),
                      std::invalid_argument);
         EXPECT_THROW(static_cast<void>(PrimitiveGeometry::CreateSphere(1.0F, 1, 12)),
                      std::invalid_argument);
         EXPECT_THROW(static_cast<void>(PrimitiveGeometry::CreateSphere(1.0F, 8, 2)),
+                     std::invalid_argument);
+        EXPECT_THROW(static_cast<void>(PrimitiveGeometry::CreateSphere(
+                         std::numeric_limits<float>::quiet_NaN(), 8, 12)),
                      std::invalid_argument);
     }
 }

@@ -5,7 +5,6 @@
 #include <stdexcept>
 
 #include "ProjectLight/Core/Log.h"
-#include "ProjectLight/Renderer/IndexBuffer.h"
 #include "ProjectLight/Renderer/RendererDebug.h"
 #include "ProjectLight/Renderer/Shader.h"
 #include "ProjectLight/Renderer/VertexArray.h"
@@ -117,16 +116,20 @@ namespace ProjectLight
     }
 
     void Renderer::DrawIndexed(const Shader& shader, const VertexArray& vertexArray,
-                               const IndexBuffer& indexBuffer, PrimitiveTopology topology) const {
-        const std::size_t indexCount = indexBuffer.GetCount();
-        const std::size_t indicesPerPrimitive = GetVerticesPerPrimitive(topology);
+                               PrimitiveTopology topology) const {
+        const std::size_t indexCount = vertexArray.GetIndexCount();
+        if (indexCount == 0) {
+            throw std::invalid_argument("DrawIndexed requires a vertex array with an index buffer");
+        }
 
+        const std::size_t indicesPerPrimitive = GetVerticesPerPrimitive(topology);
         if (indexCount % indicesPerPrimitive != 0) {
-            throw std::invalid_argument("Index count does not form complete primitives");
+            throw std::invalid_argument("indexCount has a mismatch with current draw primitive");
         }
 
         shader.Bind();
         vertexArray.Bind();
+
         glDrawElements(ToOpenGLTopology(topology), static_cast<GLsizei>(indexCount),
                        GL_UNSIGNED_INT, nullptr);
     }

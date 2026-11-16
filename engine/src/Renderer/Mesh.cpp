@@ -57,8 +57,4 @@ namespace ProjectLight
     const VertexArray& Mesh::GetVertexArray() const {
         return m_VertexArray;
     }
-
-    const IndexBuffer& Mesh::GetIndexBuffer() const {
-        return m_IndexBuffer;
-    }
 }

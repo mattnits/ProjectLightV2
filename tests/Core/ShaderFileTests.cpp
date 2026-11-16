@@ -71,4 +71,8 @@ namespace ProjectLight
 
         ExpectLoadFailureContainsPath(m_VertexPath, m_FragmentPath, m_FragmentPath);
     }
+
+    TEST(ShaderValidationTests, EmptyVertexSourceIsRejectedBeforeOpenGLCompilation) {
+        EXPECT_THROW(static_cast<void>(Shader{"", "fragment source"}), std::invalid_argument);
+    }
 }

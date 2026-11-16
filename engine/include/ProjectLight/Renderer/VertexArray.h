@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 
 #include "ProjectLight/Renderer/VertexLayout.h"
@@ -24,7 +25,10 @@ namespace ProjectLight
         void SetVertexBuffer(const VertexBuffer& vertexBuffer, const VertexLayout& layout);
         void SetIndexBuffer(const IndexBuffer& indexBuffer);
 
+        [[nodiscard]] std::size_t GetIndexCount() const;
+
     private:
         std::uint32_t m_RendererID{};
+        std::size_t m_IndexCount{};
     };
 }

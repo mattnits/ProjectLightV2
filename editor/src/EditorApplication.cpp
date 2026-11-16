@@ -151,7 +151,7 @@ namespace ProjectLight
         m_MeshShader.SetMatrix4("u_Model", modelMatrix);
         m_MeshShader.SetMatrix4("u_ViewProjection", viewProjectionMatrix);
 
-        renderer.DrawIndexed(m_MeshShader, m_CubeMesh.GetVertexArray(), m_CubeMesh.GetIndexBuffer(),
+        renderer.DrawIndexed(m_MeshShader, m_CubeMesh.GetVertexArray(),
                              PrimitiveTopology::Triangles);
 
         m_DebugLineRenderer.Flush(m_Engine.GetRenderer(), viewProjectionMatrix);
