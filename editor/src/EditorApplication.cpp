@@ -64,6 +64,7 @@ namespace ProjectLight
     }
 
     void EditorApplication::OnUpdate(Timestep timestep) {
+        m_LastTimestep = timestep;
         const glm::ivec2 viewportSize = m_Viewport.GetContentSize();
 
         if (!m_EditorCamera.SetViewportSize(viewportSize.x, viewportSize.y)) {
@@ -158,8 +159,10 @@ namespace ProjectLight
 
         m_Viewport.EndRender();
 
-        ImGui::Render();
+        m_PerformancePanel.OnImGuiRender(renderer.GetStatistics(),
+                                         renderer.GetPerformanceMeasurements(), m_LastTimestep);
 
+        ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 

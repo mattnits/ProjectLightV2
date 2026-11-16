@@ -7,6 +7,7 @@ add_executable(ProjectLightEditor
     src/Panels/ViewportPanel.cpp
     src/Renderer/GridRenderer.cpp
     src/Widgets/CameraOrientationWidget.cpp
+    src/Panels/PerformancePanel.cpp
 )
 
 target_include_directories(ProjectLightEditor

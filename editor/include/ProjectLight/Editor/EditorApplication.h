@@ -4,6 +4,7 @@
 #include "ProjectLight/Core/Timestep.h"
 #include "ProjectLight/Editor/Camera/EditorCamera.h"
 #include "ProjectLight/Editor/Panels/InspectorPanel.h"
+#include "ProjectLight/Editor/Panels/PerformancePanel.h"
 #include "ProjectLight/Editor/Panels/ViewportPanel.h"
 #include "ProjectLight/Editor/Renderer/GridRenderer.h"
 #include "ProjectLight/Renderer/DebugLineRenderer.h"
@@ -35,6 +36,8 @@ namespace ProjectLight
         TransformComponent m_SelectedTransform{};
         InspectorPanel m_Inspector;
         ViewportPanel m_Viewport;
+        PerformancePanel m_PerformancePanel;
+        Timestep m_LastTimestep;
         EditorCamera m_EditorCamera;
 
         GridRenderer m_GridRenderer;
