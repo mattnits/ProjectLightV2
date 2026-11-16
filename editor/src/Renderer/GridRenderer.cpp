@@ -1,14 +1,15 @@
 #include "ProjectLight/Editor/Renderer/GridRenderer.h"
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <cstddef>
+#include <filesystem>
 #include <glm/vec3.hpp>
 #include <span>
 #include <vector>
 
 #include "ProjectLight/Renderer/Renderer.h"
+#include "ProjectLight/Renderer/VertexLayout.h"
 
 namespace ProjectLight
 {
@@ -131,76 +132,35 @@ namespace ProjectLight
         const std::vector<GridVertex> InitialGridVertices =
             CreateGridVertices(glm::vec2{0.0F}, InitialGridSpacing);
 
-        constexpr char VertexShaderSource[] = R"(#version 460 core
+        const std::filesystem::path GridVertexShaderPath =
+            std::filesystem::path{PROJECTLIGHT_EDITOR_SHADER_DIR} / "Grid.vert";
 
-            layout(location = 0) in vec3 a_Position;
-            layout(location = 1) in vec3 a_Color;
-
-            layout(location = 0) out vec3 v_Color;
-            layout(location = 1) out vec3 v_WorldPosition;
-
-            uniform mat4 u_ViewProjection;
-
-            void main() {
-                v_Color = a_Color;
-                v_WorldPosition = a_Position;
-
-                gl_Position =
-                    u_ViewProjection * vec4(a_Position, 1.0);
-            }
-            )";
-
-        constexpr char FragmentShaderSource[] = R"(#version 460 core
-
-            layout(location = 0) in vec3 v_Color;
-            layout(location = 1) in vec3 v_WorldPosition;
-
-            layout(location = 0) out vec4 o_Color;
-
-            uniform vec2 u_GridCenter;
-            uniform float u_GridHalfSize;
-
-            void main() {
-                vec2 distanceFromCenter =
-                    abs(v_WorldPosition.xz - u_GridCenter);
-
-                float furthestDistance =
-                    max(distanceFromCenter.x, distanceFromCenter.y);
-
-                float fadeStart = u_GridHalfSize * 0.75;
-
-                float alpha = 1.0 - smoothstep(
-                    fadeStart,
-                    u_GridHalfSize,
-                    furthestDistance);
-
-                if (alpha <= 0.001) {
-                    discard;
-                }
-
-                o_Color = vec4(v_Color, alpha);
-            }
-            )";
+        const std::filesystem::path GridFragmentShaderPath =
+            std::filesystem::path{PROJECTLIGHT_EDITOR_SHADER_DIR} / "Grid.frag";
     }
 
     GridRenderer::GridRenderer()
-        : m_Shader(VertexShaderSource, FragmentShaderSource),
+        : m_Shader(Shader::FromFiles(GridVertexShaderPath, GridFragmentShaderPath)),
           m_VertexBuffer(std::as_bytes(std::span{InitialGridVertices}), BufferUsage::Dynamic),
           m_VertexCount(InitialGridVertices.size()) {
-        const std::array<VertexAttribute, 2> attributes{
-            VertexAttribute{
-                .Location = 0,
-                .ComponentCount = 3,
-                .Offset = offsetof(GridVertex, Position),
-            },
-            VertexAttribute{
-                .Location = 1,
-                .ComponentCount = 3,
-                .Offset = offsetof(GridVertex, Color),
-            },
+        const VertexLayout layout{
+            .Stride = sizeof(GridVertex),
+            .Attributes =
+                {
+                    VertexAttribute{
+                        .Location = 0,
+                        .ComponentCount = 3,
+                        .Offset = offsetof(GridVertex, Position),
+                    },
+                    VertexAttribute{
+                        .Location = 1,
+                        .ComponentCount = 3,
+                        .Offset = offsetof(GridVertex, Color),
+                    },
+                },
         };
 
-        m_VertexArray.SetVertexBuffer(m_VertexBuffer, sizeof(GridVertex), attributes);
+        m_VertexArray.SetVertexBuffer(m_VertexBuffer, layout);
     }
 
     void GridRenderer::Render(const Renderer& renderer, const glm::mat4& viewProjectionMatrix,

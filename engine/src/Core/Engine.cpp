@@ -41,11 +41,14 @@ namespace ProjectLight
             const Timestep timestep = frameTimer.Tick();
             application.OnUpdate(timestep);
 
+            m_Renderer.BeginFrame();
+
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
             application.OnRender();
 
+            m_Renderer.EndFrame();
             m_Window.SwapBuffers();
         }
 

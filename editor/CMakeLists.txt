@@ -7,6 +7,7 @@ add_executable(ProjectLightEditor
     src/Panels/ViewportPanel.cpp
     src/Renderer/GridRenderer.cpp
     src/Widgets/CameraOrientationWidget.cpp
+    src/Panels/PerformancePanel.cpp
 )
 
 target_include_directories(ProjectLightEditor
@@ -18,4 +19,8 @@ target_link_libraries(ProjectLightEditor
     PRIVATE
         ProjectLightEngine
         imgui
+)
+
+target_compile_definitions(ProjectLightEditor PRIVATE
+    PROJECTLIGHT_EDITOR_SHADER_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders\"
 )

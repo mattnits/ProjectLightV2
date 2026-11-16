@@ -56,9 +56,29 @@ namespace ProjectLight
 
     Renderer::Renderer() {
         RendererDebug::Initialize();
+        glCreateQueries(GL_TIME_ELAPSED, static_cast<GLsizei>(m_GpuTimeQueries.size()),
+                        m_GpuTimeQueries.data());
+
+        for (const std::uint32_t query : m_GpuTimeQueries) {
+            if (query == 0) {
+                glDeleteQueries(static_cast<GLsizei>(m_GpuTimeQueries.size()),
+                                m_GpuTimeQueries.data());
+
+                m_GpuTimeQueries.fill(0);
+
+                throw std::runtime_error("Failed to create OpenGL GPU timing queries");
+            }
+        }
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
 
         m_Capabilities.Vendor = QueryString(GL_VENDOR);
         m_Capabilities.Device = QueryString(GL_RENDERER);
@@ -82,8 +102,41 @@ namespace ProjectLight
                   m_Capabilities.MaximumSamples);
     }
 
-    const RendererCapabilities& Renderer::GetCapabilities() const {
-        return m_Capabilities;
+    Renderer::~Renderer() {
+        glDeleteQueries(static_cast<GLsizei>(m_GpuTimeQueries.size()), m_GpuTimeQueries.data());
+    }
+
+    void Renderer::BeginFrame() {
+        ResetStatistics();
+
+        if (m_HasSubmittedGpuTimeQuery) {
+            const std::size_t previousQueryIndex =
+                (m_CurrentGpuTimeQuery + m_GpuTimeQueries.size() - 1) % m_GpuTimeQueries.size();
+            const std::uint32_t previousQuery = m_GpuTimeQueries[previousQueryIndex];
+
+            GLint resultAvailable{};
+            glGetQueryObjectiv(previousQuery, GL_QUERY_RESULT_AVAILABLE, &resultAvailable);
+
+            if (resultAvailable == GL_TRUE) {
+                GLuint64 elapsedNanoseconds{};
+                glGetQueryObjectui64v(previousQuery, GL_QUERY_RESULT, &elapsedNanoseconds);
+                m_PerformanceMeasurements.GpuFrameTimeMilliseconds =
+                    static_cast<double>(elapsedNanoseconds) / 1'000'000.0;
+                m_PerformanceMeasurements.HasGpuFrameTime = true;
+            }
+        }
+        m_CpuFrameStart = std::chrono::steady_clock::now();
+        glBeginQuery(GL_TIME_ELAPSED, m_GpuTimeQueries[m_CurrentGpuTimeQuery]);
+    }
+
+    void Renderer::EndFrame() {
+        glEndQuery(GL_TIME_ELAPSED);
+        const auto cpuFrameEnd = std::chrono::steady_clock::now();
+        m_PerformanceMeasurements.CpuFrameTimeMilliseconds =
+            std::chrono::duration<double, std::milli>{cpuFrameEnd - m_CpuFrameStart}.count();
+        m_PerformanceMeasurements.HasCpuFrameTime = true;
+        m_HasSubmittedGpuTimeQuery = true;
+        m_CurrentGpuTimeQuery = (m_CurrentGpuTimeQuery + 1) % m_GpuTimeQueries.size();
     }
 
     void Renderer::Draw(const Shader& shader, const VertexArray& vertexArray,
@@ -106,6 +159,46 @@ namespace ProjectLight
         vertexArray.Bind();
 
         glDrawArrays(openGLTopology, 0, static_cast<GLsizei>(vertexCount));
+
+        ++m_Statistics.DrawCalls;
+        m_Statistics.VerticesSubmitted += vertexCount;
+    }
+
+    void Renderer::DrawIndexed(const Shader& shader, const VertexArray& vertexArray,
+                               PrimitiveTopology topology) const {
+        const std::size_t indexCount = vertexArray.GetIndexCount();
+        if (indexCount == 0) {
+            throw std::invalid_argument("DrawIndexed requires a vertex array with an index buffer");
+        }
+
+        const std::size_t indicesPerPrimitive = GetVerticesPerPrimitive(topology);
+        if (indexCount % indicesPerPrimitive != 0) {
+            throw std::invalid_argument("indexCount has a mismatch with current draw primitive");
+        }
+
+        shader.Bind();
+        vertexArray.Bind();
+
+        glDrawElements(ToOpenGLTopology(topology), static_cast<GLsizei>(indexCount),
+                       GL_UNSIGNED_INT, nullptr);
+        ++m_Statistics.DrawCalls;
+        m_Statistics.IndicesSubmitted += indexCount;
+    }
+
+    void Renderer::ResetStatistics() {
+        m_Statistics = {};
+    }
+
+    const RendererCapabilities& Renderer::GetCapabilities() const {
+        return m_Capabilities;
+    }
+
+    const RendererPerformanceMeasurements& Renderer::GetPerformanceMeasurements() const {
+        return m_PerformanceMeasurements;
+    }
+
+    const RendererStatistics& Renderer::GetStatistics() const {
+        return m_Statistics;
     }
 
 }

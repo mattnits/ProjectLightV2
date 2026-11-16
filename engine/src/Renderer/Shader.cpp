@@ -1,7 +1,10 @@
 #include "ProjectLight/Renderer/Shader.h"
 
+#include <fstream>
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <iterator>
+#include <limits>
 #include <stdexcept>
 #include <string>
 
@@ -12,6 +15,13 @@ namespace ProjectLight
     namespace
     {
         GLuint CompileShader(GLenum shader, std::string_view source, std::string_view ShaderName) {
+            if (source.empty()) {
+                throw std::invalid_argument("Shader source cannot be empty");
+            }
+            if (source.size() > static_cast<std::size_t>(std::numeric_limits<GLint>::max())) {
+                throw std::length_error("Shader source exceeds the OpenGL size limit");
+            }
+
             const GLuint shaderID = glCreateShader(shader);
 
             if (shaderID == 0) {
@@ -47,9 +57,12 @@ namespace ProjectLight
 
             glDeleteShader(shaderID);
 
-            Log::Error("{} shader compilation failed:\n{}", ShaderName, errorMessage);
-
-            throw std::runtime_error("Shader compilation failed");
+            std::string failureMessage = std::string{ShaderName} + " shader compilation failed";
+            if (!errorMessage.empty()) {
+                failureMessage += ":\n" + errorMessage;
+            }
+            Log::Error("{}", failureMessage);
+            throw std::runtime_error(failureMessage);
         }
 
         GLuint LinkProgram(GLuint vertexShaderID, GLuint fragmentShaderID) {
@@ -86,8 +99,31 @@ namespace ProjectLight
 
             glDeleteProgram(programID);
 
-            Log::Error("Shader program linking failed:\n{}", errorMessage);
-            throw std::runtime_error("Shader program linking failed");
+            std::string failureMessage = "Shader program linking failed";
+            if (!errorMessage.empty()) {
+                failureMessage += ":\n" + errorMessage;
+            }
+            Log::Error("{}", failureMessage);
+            throw std::runtime_error(failureMessage);
+        }
+
+        std::string ReadShaderFile(const std::filesystem::path& path) {
+            std::ifstream file{path, std::ios::binary};
+            if (!file) {
+                throw std::runtime_error("Could not open shader file: " + path.string());
+            }
+
+            std::string source{std::istreambuf_iterator<char>{file},
+                               std::istreambuf_iterator<char>{}};
+
+            if (file.bad()) {
+                throw std::runtime_error("Could not read shader file: " + path.string());
+            }
+            if (source.empty()) {
+                throw std::runtime_error("Shader file is empty: " + path.string());
+            }
+
+            return source;
         }
     }
 
@@ -121,6 +157,14 @@ namespace ProjectLight
         if (m_ProgramID != 0) {
             glDeleteProgram(m_ProgramID);
         }
+    }
+
+    Shader Shader::FromFiles(const std::filesystem::path& vertexPath,
+                             const std::filesystem::path& fragmentPath) {
+        const std::string vertexSource = ReadShaderFile(vertexPath);
+        const std::string fragmentSource = ReadShaderFile(fragmentPath);
+
+        return Shader{vertexSource, fragmentSource};
     }
 
     void Shader::Bind() const {
@@ -169,4 +213,5 @@ namespace ProjectLight
 
         glProgramUniform2f(m_ProgramID, location, value.x, value.y);
     }
+
 }

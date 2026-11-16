@@ -12,12 +12,21 @@ add_library(ProjectLightEngine STATIC
     src/Renderer/VertexBuffer.cpp
     src/Renderer/VertexArray.cpp
     src/Math/Ray.cpp
+    src/Math/ModelMatrix.cpp
     src/Renderer/DebugLineRenderer.cpp
+    src/Renderer/IndexBuffer.cpp
+    src/Renderer/Mesh.cpp
+    src/Renderer/PrimitiveGeometry.cpp
 )
 
 target_include_directories(ProjectLightEngine
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+
+target_compile_definitions(ProjectLightEngine PRIVATE
+    PROJECTLIGHT_ENGINE_SHADER_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders\"
 )
 
 target_compile_features(ProjectLightEngine
