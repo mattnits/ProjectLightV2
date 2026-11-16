@@ -12,8 +12,11 @@ add_library(ProjectLightEngine STATIC
     src/Renderer/VertexBuffer.cpp
     src/Renderer/VertexArray.cpp
     src/Math/Ray.cpp
+    src/Math/ModelMatrix.cpp
     src/Renderer/DebugLineRenderer.cpp
     src/Renderer/IndexBuffer.cpp
+    src/Renderer/Mesh.cpp
+    src/Renderer/PrimitiveGeometry.cpp
 )
 
 target_include_directories(ProjectLightEngine

@@ -16,16 +16,28 @@
 #include "ProjectLight/Core/Log.h"
 #include "ProjectLight/Editor/Camera/EditorCameraPersistence.h"
 #include "ProjectLight/Input/Input.h"
+#include "ProjectLight/Math/ModelMatrix.h"
 #include "ProjectLight/Math/Ray.h"
+#include "ProjectLight/Renderer/PrimitiveGeometry.h"
+#include "ProjectLight/Renderer/Renderer.h"
 
 namespace ProjectLight
 {
     namespace
     {
         const std::filesystem::path EditorCameraStatePath{"editor_camera.ini"};
+
+        const std::filesystem::path MeshVertexShaderPath =
+            std::filesystem::path{PROJECTLIGHT_EDITOR_SHADER_DIR} / "Mesh.vert";
+
+        const std::filesystem::path MeshFragmentShaderPath =
+            std::filesystem::path{PROJECTLIGHT_EDITOR_SHADER_DIR} / "Mesh.frag";
     }
 
-    EditorApplication::EditorApplication(Engine& engine) : m_Engine(engine) {}
+    EditorApplication::EditorApplication(Engine& engine)
+        : m_Engine(engine),
+          m_MeshShader(Shader::FromFiles(MeshVertexShaderPath, MeshFragmentShaderPath)),
+          m_CubeMesh(PrimitiveGeometry::CreateCube(3)) {}
 
     void EditorApplication::OnStart() {
         IMGUI_CHECKVERSION();
@@ -125,11 +137,22 @@ namespace ProjectLight
 
         const glm::mat4 viewProjectionMatrix =
             camera.GetProjectionMatrix() * camera.GetViewMatrix();
+        const Renderer& renderer = m_Engine.GetRenderer();
         const float gridScaleDistance =
             std::max(std::abs(camera.GetPosition().y), m_EditorCamera.GetPivotDistance());
 
         m_GridRenderer.Render(m_Engine.GetRenderer(), viewProjectionMatrix,
                               m_EditorCamera.GetPivot(), gridScaleDistance);
+
+        const glm::mat4 modelMatrix =
+            CreateModelMatrix(m_SelectedTransform.Translation, m_SelectedTransform.Rotation,
+                              m_SelectedTransform.Scale);
+
+        m_MeshShader.SetMatrix4("u_Model", modelMatrix);
+        m_MeshShader.SetMatrix4("u_ViewProjection", viewProjectionMatrix);
+
+        renderer.DrawIndexed(m_MeshShader, m_CubeMesh.GetVertexArray(), m_CubeMesh.GetIndexBuffer(),
+                             PrimitiveTopology::Triangles);
 
         m_DebugLineRenderer.Flush(m_Engine.GetRenderer(), viewProjectionMatrix);
 

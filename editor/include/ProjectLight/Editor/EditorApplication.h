@@ -7,6 +7,8 @@
 #include "ProjectLight/Editor/Panels/ViewportPanel.h"
 #include "ProjectLight/Editor/Renderer/GridRenderer.h"
 #include "ProjectLight/Renderer/DebugLineRenderer.h"
+#include "ProjectLight/Renderer/Mesh.h"
+#include "ProjectLight/Renderer/Shader.h"
 #include "ProjectLight/Scene/Components/TransformComponent.h"
 
 namespace ProjectLight
@@ -37,5 +39,7 @@ namespace ProjectLight
 
         GridRenderer m_GridRenderer;
         DebugLineRenderer m_DebugLineRenderer;
+        Shader m_MeshShader;
+        Mesh m_CubeMesh;
     };
 }
