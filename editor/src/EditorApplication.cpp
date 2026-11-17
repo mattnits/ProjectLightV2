@@ -35,7 +35,7 @@ namespace ProjectLight
     }
 
     EditorApplication::EditorApplication(Engine& engine)
-        : m_Engine(engine),
+        : m_Engine(engine), m_ActiveScene(std::make_unique<Scene>()),
           m_MeshShader(Shader::FromFiles(MeshVertexShaderPath, MeshFragmentShaderPath)),
           m_CubeMesh(PrimitiveGeometry::CreateCube(3)) {}
 

@@ -11,8 +11,10 @@ add_executable(ProjectLightTests
     Core/ModelMatrixTests.cpp
     Core/PrimitiveGeometryTests.cpp
     Core/RayTests.cpp
+    Core/SceneTests.cpp
     Core/ShaderFileTests.cpp
     Core/TimestepTests.cpp
+    Core/UUIDTests.cpp
     Editor/EditorCameraTests.cpp
     Editor/EditorCameraPersistenceTests.cpp
 )
