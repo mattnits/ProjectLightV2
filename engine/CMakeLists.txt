@@ -3,20 +3,23 @@ add_library(ProjectLightEngine STATIC
     src/Core/Engine.cpp
     src/Core/FrameTimer.cpp
     src/Core/Log.cpp
+    src/Core/UUID.cpp
     src/Input/Input.cpp
-    src/Renderer/RendererDebug.cpp
+    src/Math/ModelMatrix.cpp
+    src/Math/Ray.cpp
+    src/Renderer/DebugLineRenderer.cpp
     src/Renderer/Framebuffer.cpp
-    src/Window/Window.cpp
+    src/Renderer/IndexBuffer.cpp
+    src/Renderer/Mesh.cpp
+    src/Renderer/PrimitiveGeometry.cpp
+    src/Renderer/RendererDebug.cpp
     src/Renderer/Renderer.cpp
     src/Renderer/Shader.cpp
     src/Renderer/VertexBuffer.cpp
     src/Renderer/VertexArray.cpp
-    src/Math/Ray.cpp
-    src/Math/ModelMatrix.cpp
-    src/Renderer/DebugLineRenderer.cpp
-    src/Renderer/IndexBuffer.cpp
-    src/Renderer/Mesh.cpp
-    src/Renderer/PrimitiveGeometry.cpp
+    src/Scene/Scene.cpp
+    src/Scene/Entity.cpp
+    src/Window/Window.cpp
 )
 
 target_include_directories(ProjectLightEngine
@@ -36,6 +39,7 @@ target_compile_features(ProjectLightEngine
 
 target_link_libraries(ProjectLightEngine
     PUBLIC
+        EnTT::EnTT
         glm::glm
         spdlog::spdlog
     PRIVATE

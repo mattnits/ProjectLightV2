@@ -1,8 +1,10 @@
 #pragma once
 
+#include <cstdint>
+
 namespace ProjectLight
 {
-    enum class KeyCode
+    enum class KeyCode : std::uint8_t
     {
         W,
         A,
@@ -18,7 +20,7 @@ namespace ProjectLight
         Count
     };
 
-    enum class MouseButton
+    enum class MouseButton : std::uint8_t
     {
         Left,
         Middle,

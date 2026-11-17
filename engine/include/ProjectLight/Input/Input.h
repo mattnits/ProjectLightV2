@@ -18,15 +18,15 @@ namespace ProjectLight
         void UpdateScrollDelta(double x, double y);
         void ResetMouseTracking();
 
-        bool IsKeyDown(KeyCode key) const;
-        bool WasKeyPressed(KeyCode key) const;
-        bool WasKeyReleased(KeyCode key) const;
-        bool IsMouseButtonDown(MouseButton button) const;
-        bool WasMouseButtonPressed(MouseButton button) const;
-        bool WasMouseButtonReleased(MouseButton button) const;
-        glm::dvec2 GetMousePosition() const;
-        glm::dvec2 GetMouseDelta() const;
-        glm::dvec2 GetScrollDelta() const;
+        [[nodiscard]] bool IsKeyDown(KeyCode key) const;
+        [[nodiscard]] bool WasKeyPressed(KeyCode key) const;
+        [[nodiscard]] bool WasKeyReleased(KeyCode key) const;
+        [[nodiscard]] bool IsMouseButtonDown(MouseButton button) const;
+        [[nodiscard]] bool WasMouseButtonPressed(MouseButton button) const;
+        [[nodiscard]] bool WasMouseButtonReleased(MouseButton button) const;
+        [[nodiscard]] glm::dvec2 GetMousePosition() const;
+        [[nodiscard]] glm::dvec2 GetMouseDelta() const;
+        [[nodiscard]] glm::dvec2 GetScrollDelta() const;
 
         void Reset();
 

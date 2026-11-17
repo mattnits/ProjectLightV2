@@ -2,6 +2,7 @@ add_executable(ProjectLightTests
     ${PROJECT_SOURCE_DIR}/editor/src/Camera/EditorCamera.cpp
     ${PROJECT_SOURCE_DIR}/editor/src/Camera/EditorCameraPersistence.cpp
     Core/CameraTests.cpp
+    Core/EnTTIntegrationTests.cpp
     Core/EngineTests.cpp
     Core/SmokeTest.cpp
     Core/FrameTimerTests.cpp
@@ -10,8 +11,10 @@ add_executable(ProjectLightTests
     Core/ModelMatrixTests.cpp
     Core/PrimitiveGeometryTests.cpp
     Core/RayTests.cpp
+    Core/SceneTests.cpp
     Core/ShaderFileTests.cpp
     Core/TimestepTests.cpp
+    Core/UUIDTests.cpp
     Editor/EditorCameraTests.cpp
     Editor/EditorCameraPersistenceTests.cpp
 )

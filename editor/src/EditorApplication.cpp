@@ -16,10 +16,10 @@
 #include "ProjectLight/Core/Log.h"
 #include "ProjectLight/Editor/Camera/EditorCameraPersistence.h"
 #include "ProjectLight/Input/Input.h"
-#include "ProjectLight/Math/ModelMatrix.h"
 #include "ProjectLight/Math/Ray.h"
 #include "ProjectLight/Renderer/PrimitiveGeometry.h"
 #include "ProjectLight/Renderer/Renderer.h"
+#include "ProjectLight/Scene/Components/MeshRendererComponent.h"
 
 namespace ProjectLight
 {
@@ -37,7 +37,14 @@ namespace ProjectLight
     EditorApplication::EditorApplication(Engine& engine)
         : m_Engine(engine),
           m_MeshShader(Shader::FromFiles(MeshVertexShaderPath, MeshFragmentShaderPath)),
-          m_CubeMesh(PrimitiveGeometry::CreateCube(3)) {}
+          m_CubeMesh(PrimitiveGeometry::CreateCube(3)), m_ActiveScene(std::make_unique<Scene>()) {
+        m_SelectedEntity = m_ActiveScene->CreateEntity("Cube");
+
+        static_cast<void>(m_ActiveScene->AddComponent<MeshRendererComponent>(
+            m_SelectedEntity, MeshRendererComponent{
+                                  .MeshResource = &m_CubeMesh,
+                              }));
+    }
 
     void EditorApplication::OnStart() {
         IMGUI_CHECKVERSION();
@@ -59,7 +66,6 @@ namespace ProjectLight
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 460");
 
-        m_Inspector.SetTransform(&m_SelectedTransform);
         LoadEditorCameraState();
     }
 
@@ -112,8 +118,11 @@ namespace ProjectLight
 
         if (window.GetCursorMode() != CursorMode::Captured && isViewportFocused &&
             input.WasKeyPressed(KeyCode::F)) {
-            if (!m_EditorCamera.Focus(m_SelectedTransform.Translation)) {
-                const glm::vec3& target = m_SelectedTransform.Translation;
+            const TransformComponent& selectedTransform =
+                m_ActiveScene->GetEntityTransform(m_SelectedEntity);
+
+            if (!m_EditorCamera.Focus(selectedTransform.Translation)) {
+                const glm::vec3& target = selectedTransform.Translation;
                 Log::Warn("Editor camera could not focus target ({}, {}, {})", target.x, target.y,
                           target.z);
             }
@@ -128,7 +137,7 @@ namespace ProjectLight
 #ifdef IMGUI_HAS_DOCK
         ImGui::DockSpaceOverViewport();
 #endif
-
+        m_Inspector.SetTransform(&m_ActiveScene->GetEntityTransform(m_SelectedEntity));
         m_Inspector.OnImGuiRender();
         m_Viewport.OnImGuiRender(m_EditorCamera.GetCamera().GetOrientation());
 
@@ -145,15 +154,11 @@ namespace ProjectLight
         m_GridRenderer.Render(m_Engine.GetRenderer(), viewProjectionMatrix,
                               m_EditorCamera.GetPivot(), gridScaleDistance);
 
-        const glm::mat4 modelMatrix =
-            CreateModelMatrix(m_SelectedTransform.Translation, m_SelectedTransform.Rotation,
-                              m_SelectedTransform.Scale);
-
-        m_MeshShader.SetMatrix4("u_Model", modelMatrix);
         m_MeshShader.SetMatrix4("u_ViewProjection", viewProjectionMatrix);
-
-        renderer.DrawIndexed(m_MeshShader, m_CubeMesh.GetVertexArray(),
-                             PrimitiveTopology::Triangles);
+        m_ActiveScene->ForEachRenderable([&](const Mesh& mesh, const glm::mat4& worldMatrix) {
+            m_MeshShader.SetMatrix4("u_Model", worldMatrix);
+            renderer.DrawIndexed(m_MeshShader, mesh.GetVertexArray(), PrimitiveTopology::Triangles);
+        });
 
         m_DebugLineRenderer.Flush(m_Engine.GetRenderer(), viewProjectionMatrix);
 
