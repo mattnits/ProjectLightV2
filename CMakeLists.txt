@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.28)
 
 project(GameEngine
     VERSION 0.1.0
@@ -40,6 +40,7 @@ target_compile_definitions(glfw INTERFACE GLFW_INCLUDE_NONE)
 add_subdirectory(third_party/glm)
 add_subdirectory(third_party/glad)
 add_subdirectory(third_party)
+add_subdirectory(third_party/entt)
 
 # Project targets
 add_subdirectory(engine)

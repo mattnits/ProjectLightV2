@@ -36,6 +36,7 @@ target_compile_features(ProjectLightEngine
 
 target_link_libraries(ProjectLightEngine
     PUBLIC
+        EnTT::EnTT
         glm::glm
         spdlog::spdlog
     PRIVATE
