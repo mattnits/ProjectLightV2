@@ -12,7 +12,6 @@
 #include "ProjectLight/Renderer/DebugLineRenderer.h"
 #include "ProjectLight/Renderer/Mesh.h"
 #include "ProjectLight/Renderer/Shader.h"
-#include "ProjectLight/Scene/Components/TransformComponent.h"
 #include "ProjectLight/Scene/Scene.h"
 
 namespace ProjectLight
@@ -36,17 +35,17 @@ namespace ProjectLight
         void SaveEditorCameraState() const;
 
         Engine& m_Engine;
+        Shader m_MeshShader;
+        Mesh m_CubeMesh;
         std::unique_ptr<Scene> m_ActiveScene;
-        TransformComponent m_SelectedTransform{};
+        Entity m_SelectedEntity;
+
         InspectorPanel m_Inspector;
         ViewportPanel m_Viewport;
         PerformancePanel m_PerformancePanel;
         Timestep m_LastTimestep;
         EditorCamera m_EditorCamera;
-
         GridRenderer m_GridRenderer;
         DebugLineRenderer m_DebugLineRenderer;
-        Shader m_MeshShader;
-        Mesh m_CubeMesh;
     };
 }

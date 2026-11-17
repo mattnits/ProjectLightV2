@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <utility>
 
+#include "ProjectLight/Math/ModelMatrix.h"
+#include "ProjectLight/Scene/Components/MeshRendererComponent.h"
 #include "ProjectLight/Scene/Components/RelationshipComponent.h"
 #include "ProjectLight/Scene/Components/TagComponent.h"
 #include "ProjectLight/Scene/Components/UUIDComponent.h"
@@ -43,6 +45,25 @@ namespace ProjectLight
 
         DestroyEntityRecursive(handle);
         return true;
+    }
+
+    Entity Scene::DuplicateEntity(const Entity& source) {
+        if (!IsValid(source)) {
+            throw std::invalid_argument("Cannot duplicate an invalid entity");
+        }
+        Entity duplicate = CreateEntity(GetEntityName(source) + " Copy");
+        try {
+            GetEntityTransform(duplicate) = GetEntityTransform(source);
+            if (HasComponent<MeshRendererComponent>(source)) {
+                AddComponent<MeshRendererComponent>(duplicate,
+                                                    GetComponent<MeshRendererComponent>(source));
+            }
+        } catch (...) {
+            static_cast<void>(DestroyEntity(duplicate));
+            throw;
+        }
+
+        return duplicate;
     }
 
     bool Scene::IsValid(const Entity& entity) const {
@@ -172,6 +193,30 @@ namespace ProjectLight
         }
 
         return Entity{children[index], *this};
+    }
+
+    glm::mat4 Scene::GetLocalTransformMatrix(const Entity& entity) const {
+        const TransformComponent& transform = GetEntityTransform(entity);
+        return CreateModelMatrix(transform.Translation, transform.Rotation, transform.Scale);
+    }
+
+    glm::mat4 Scene::GetWorldTransformMatrix(const Entity& entity) const {
+        glm::mat4 worldMatrix = GetLocalTransformMatrix(entity);
+        entt::entity parent = m_Registry.get<RelationshipComponent>(entity.m_Handle).Parent;
+
+        while (parent != entt::null) {
+            if (!m_Registry.valid(parent)) {
+                throw std::logic_error("Scene hierarchy contains an invalid parent");
+            }
+            const TransformComponent& parentTransform = m_Registry.get<TransformComponent>(parent);
+            const glm::mat4 parentLocalMatrix = CreateModelMatrix(
+                parentTransform.Translation, parentTransform.Rotation, parentTransform.Scale);
+
+            worldMatrix = parentLocalMatrix * worldMatrix;
+            parent = m_Registry.get<RelationshipComponent>(parent).Parent;
+        }
+
+        return worldMatrix;
     }
 
     bool Scene::WouldCreateCycle(entt::entity child, entt::entity proposedParent) const {
